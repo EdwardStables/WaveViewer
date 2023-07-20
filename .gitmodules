@@ -1,0 +1,3 @@
+[submodule "vcd_parse"]
+	path = vcd_parse
+	url = git@github.com:EdwardStables/vcd_parse.git
