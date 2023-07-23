@@ -44,6 +44,9 @@ public:
 class WaveList : public Pane {
     Scope* scope = nullptr;
     int selected_row;
+    int hovered_row;
+    Var* hovered_var = nullptr;
+    Var* selected_var = nullptr;
     float scale_factor = 2.0f;
 public:
     WaveList(olc::TransformedView* tv, Store* store) : Pane(tv) {};
@@ -51,4 +54,15 @@ public:
     virtual void update(float t) override;
     virtual void draw() override;
     void set_scope(Scope*);
+    Var* get_selected_var();
+};
+
+class WavePane : public Pane {
+    std::vector<std::string> waves;
+public:
+    WavePane(olc::TransformedView* tv) : Pane(tv) {};
+    WavePane() : Pane() {};
+    virtual void update(float t) override;
+    virtual void draw() override;
+    void add_wave(Var* var);
 };

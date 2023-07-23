@@ -48,11 +48,10 @@ void Heirarchy::update(float t) {
     auto mpos = get_mpos();
     if (point_in_bb(mpos)){
         hovered_row = mpos.y / (8*scale_factor);
-    }
-
-    if (tv->GetPGE()->GetMouse(0).bPressed){
-        selected_row = hovered_row;
-        selected_scope = hovered_scope;
+        if (tv->GetPGE()->GetMouse(0).bPressed){
+            selected_row = hovered_row;
+            selected_scope = hovered_scope;
+        }
     }
 }
 
@@ -103,7 +102,12 @@ void WaveList::update(float t) {
     auto mpos = get_mpos();
 
     if (point_in_bb(mpos)){
-        selected_row = mpos.y / (8*scale_factor);
+        hovered_row = mpos.y / (8*scale_factor);
+
+        if (tv->GetPGE()->GetMouse(0).bPressed){
+            selected_row = hovered_row;
+            selected_var = hovered_var;
+        }
     }
 }
 
@@ -114,7 +118,8 @@ void WaveList::draw() {
     int row = 0;
     for (auto& [name, var] : scope->identifier_to_var){
         olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
-        if (row == selected_row){
+        hovered_var = var;
+        if (row == hovered_row || row == selected_row){
             tv->FillRectDecal(
                 start_pos,
                 {float(size.x), 8*scale_factor}, olc::WHITE
@@ -135,4 +140,26 @@ void WaveList::draw() {
 
 void WaveList::set_scope(Scope* scope) {
     this->scope = scope;
+}
+
+Var* WaveList::get_selected_var() {
+    Var* s = selected_var;
+    selected_var = nullptr;
+    return s;
+}
+
+void WavePane::update(float t) {
+
+}
+
+void WavePane::draw() {
+    draw_frame();
+    for (auto& w : waves)
+        std::cout << w << " ";
+    std::cout << std::endl;
+}
+
+void WavePane::add_wave(Var* var) {
+    std::cout << var->identifier << std::endl;
+    waves.push_back(var->identifier);
 }

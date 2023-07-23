@@ -18,6 +18,13 @@ bool WaveViewer::OnUserCreate() {
     sigs->set_size(sigs_size);
     manager.add_pane(sigs, {1, heir->get_size().y + heir->get_pos().y + 1});
 
+    //wave pane
+    WavePane* waves = new WavePane();
+    olc::vf2d waves_size = GetScreenSize()-olc::vi2d(2,3);
+    waves_size.x *= 0.8f;
+    waves->set_size(waves_size);
+    manager.add_pane(waves, {heir->get_size().x + 1, 1});
+
 	return true;
 }
 
