@@ -12,6 +12,11 @@ void Manager::update(float t) {
         w->update(t);
     }
 
+    //horrible hard-coding, need to replace with messaging system
+    Scope* selected_scope = dynamic_cast<Heirarchy*>(pane_stack[0])->get_selected_scope();
+    if (selected_scope)
+        dynamic_cast<WaveList*>(pane_stack[1])->set_scope(selected_scope);
+
 /* Pane overlap testing */
 //    for (auto p : pane_stack) {
 //        p->fill_colour = olc::BLACK;

@@ -26,7 +26,10 @@ public:
 
 class Heirarchy : public Pane {
     Store* store;
+    int hovered_row;
     int selected_row;
+    Scope* hovered_scope = nullptr;
+    Scope* selected_scope = nullptr;
     float scale_factor = 2.0f;
 public:
     Heirarchy(olc::TransformedView* tv, Store* store) : Pane(tv), store(store) {};
@@ -35,6 +38,7 @@ public:
     virtual void draw() override;
 
     void draw_tree(int& row, int depth, Scope* current_scope);
+    Scope* get_selected_scope();
 };
 
 class WaveList : public Pane {

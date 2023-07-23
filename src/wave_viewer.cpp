@@ -16,7 +16,6 @@ bool WaveViewer::OnUserCreate() {
     sigs_size.x *= 0.2f;
     sigs_size.y *= 0.5f;
     sigs->set_size(sigs_size);
-    sigs->set_scope(store->top_scope->child_scopes["t1"]);
     manager.add_pane(sigs, {1, heir->get_size().y + heir->get_pos().y + 1});
 
 	return true;

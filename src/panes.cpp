@@ -15,9 +15,8 @@ void Pane::set_pos(olc::vi2d pos) {
 
 bool Pane::point_in_bb(olc::vi2d p) {
     if (!tv) return false;
-    olc::vi2d window_pos = tv->ScreenToWorld(p);
-    return window_pos.x >= 0 && window_pos.y >= 0 &&
-            window_pos.x < size.x && window_pos.y < size.y;
+    return p.x >= 0 && p.y >= 0 &&
+           p.x < size.x && p.y < size.y;
 }
 
 void Pane::draw_frame() {
@@ -48,7 +47,12 @@ olc::vi2d Pane::get_size() {
 void Heirarchy::update(float t) {
     auto mpos = get_mpos();
     if (point_in_bb(mpos)){
-        selected_row = mpos.y / (8*scale_factor);
+        hovered_row = mpos.y / (8*scale_factor);
+    }
+
+    if (tv->GetPGE()->GetMouse(0).bPressed){
+        selected_row = hovered_row;
+        selected_scope = hovered_scope;
     }
 }
 
@@ -61,9 +65,14 @@ void Heirarchy::draw() {
     draw_tree(row, depth, s);
 }
 
+Scope* Heirarchy::get_selected_scope() {
+    return selected_scope;
+}
+
 void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
-    if (row == selected_row){
+    if (row == hovered_row || row == selected_row){
         float width = size.x - depth * 8 * scale_factor;
+        hovered_scope = scope;
         tv->FillRectDecal(
             olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
             {width, 8*scale_factor}, olc::WHITE
@@ -92,6 +101,7 @@ void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
 
 void WaveList::update(float t) {
     auto mpos = get_mpos();
+
     if (point_in_bb(mpos)){
         selected_row = mpos.y / (8*scale_factor);
     }
