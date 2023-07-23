@@ -2,13 +2,21 @@
 #include "panes.h"
 
 bool WaveViewer::OnUserCreate() {
-    //test panes
-    Pane* p1 = new Heirarchy(store);
-    
-    olc::vf2d p1_size = GetScreenSize()-olc::vi2d(2,2);
-    p1_size.x *= 0.2f;
-    p1->set_size(p1_size);
-    manager.add_pane(p1, {1,1});
+    //heirarchy display
+    Pane* heir = new Heirarchy(store);
+    olc::vf2d heir_size = GetScreenSize()-olc::vi2d(2,2);
+    heir_size.x *= 0.2f;
+    heir_size.y *= 0.5f;
+    heir->set_size(heir_size);
+    manager.add_pane(heir, {1,1});
+
+    //wave list
+    Pane* sigs = new WaveList();
+    olc::vf2d sigs_size = GetScreenSize()-olc::vi2d(2,2);
+    sigs_size.x *= 0.2f;
+    sigs_size.y *= 0.5f;
+    sigs->set_size(sigs_size);
+    manager.add_pane(sigs, {1, heir->get_size().y + heir->get_pos().y + 1});
 
 	return true;
 }

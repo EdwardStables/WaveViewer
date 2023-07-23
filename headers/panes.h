@@ -20,6 +20,8 @@ public:
     virtual void set_size(olc::vi2d) final;
     virtual void set_pos(olc::vi2d) final;
     virtual olc::vi2d get_mpos() final;
+    virtual olc::vf2d get_pos() final;
+    virtual olc::vi2d get_size() final;
 };
 
 class Heirarchy : public Pane {
@@ -33,4 +35,16 @@ public:
     virtual void draw() override;
 
     void draw_tree(int& row, int depth, Scope* current_scope);
+};
+
+class WaveList : public Pane {
+    Scope* scope = nullptr;
+    int selected_row;
+    float scale_factor = 2.0f;
+public:
+    WaveList(olc::TransformedView* tv, Store* store) : Pane(tv) {};
+    WaveList() : Pane() {};
+    virtual void update(float t) override;
+    virtual void draw() override;
+    void set_scope(Scope*);
 };

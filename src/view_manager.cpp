@@ -12,19 +12,20 @@ void Manager::update(float t) {
         w->update(t);
     }
 
-    for (auto p : pane_stack) {
-        p->fill_colour = olc::BLACK;
-    }
-
-    if (pge.GetMouse(0).bHeld){
-        auto mpos = pge.GetMousePos();
-        for (int i = pane_stack.size()-1; i >= 0; i--){
-            if (pane_stack[i]->point_in_bb(mpos)){
-                pane_stack[i]->fill_colour = olc::GREEN;
-                break;
-            }
-        }
-    }
+/* Pane overlap testing */
+//    for (auto p : pane_stack) {
+//        p->fill_colour = olc::BLACK;
+//    }
+//
+//    if (pge.GetMouse(0).bHeld){
+//        auto mpos = pge.GetMousePos();
+//        for (int i = pane_stack.size()-1; i >= 0; i--){
+//            if (pane_stack[i]->point_in_bb(mpos)){
+//                pane_stack[i]->fill_colour = olc::GREEN;
+//                break;
+//            }
+//        }
+//    }
 }
 
 void Manager::draw() {

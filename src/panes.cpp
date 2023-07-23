@@ -37,6 +37,14 @@ olc::vi2d Pane::get_mpos() {
     return olc::vi2d(tv->ScreenToWorld(tv->GetPGE()->GetMousePos()));
 }
 
+olc::vf2d Pane::get_pos() {
+    return tv->GetWorldOffset();
+}
+
+olc::vi2d Pane::get_size() {
+    return size; 
+}
+
 void Heirarchy::update(float t) {
     auto mpos = get_mpos();
     if (point_in_bb(mpos)){
@@ -79,5 +87,38 @@ void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
 
     for (auto c : scope->child_scopes){
         draw_tree(row, depth, c.second);
+    }
+}
+
+void WaveList::update(float t) {
+    auto mpos = get_mpos();
+    if (point_in_bb(mpos)){
+        selected_row = mpos.y / (8*scale_factor);
+    }
+}
+
+void WaveList::draw() {
+    draw_frame();
+    if (!scope) return;
+
+    int row = 0;
+    for (auto& [name, var] : scope->identifier_to_var){
+        olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
+        if (row == selected_row){
+            tv->FillRectDecal(
+                start_pos,
+                {float(size.x), 8*scale_factor}, olc::WHITE
+            );
+            tv->DrawStringDecal(
+                start_pos,
+                name, olc::BLACK, {scale_factor, scale_factor}
+            );
+        } else {
+            tv->DrawStringDecal(
+                start_pos,
+                name, olc::WHITE, {scale_factor, scale_factor}
+            );
+        }
+        row++;
     }
 }
