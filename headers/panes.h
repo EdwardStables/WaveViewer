@@ -22,11 +22,9 @@ public:
 
 class WaveList : public Pane {
     Scope* scope = nullptr;
-    int selected_row;
-    int hovered_row;
-    Var* hovered_var = nullptr;
-    Var* selected_var = nullptr;
+    int selected_row = -1;
     float scale_factor = 2.0f;
+    std::vector<std::tuple<Var*,bool>> draw_list;
 public:
     WaveList(Manager* manager, olc::TransformedView* tv, Store* store) : Pane(manager, tv) {};
     WaveList(Manager* manager) : Pane(manager) {};

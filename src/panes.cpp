@@ -63,15 +63,31 @@ void Heirarchy::build_draw_list(int& row, int depth, Scope* scope) {
 }
 
 void WaveList::update(float t) {
+    if (!scope) return;
+
+    //TODO: don't need to clear this every frame
+    int saved_selected = selected_row;
+    draw_list.clear();    
+    int row = 0;
+    
+    for (auto [name, var] : scope->identifier_to_var){
+        draw_list.push_back(std::make_tuple(var, false));
+    }
+
+    if (saved_selected != -1 && saved_selected < draw_list.size()){
+        std::get<1>(draw_list[saved_selected]) = true;
+    }
+
+
     auto mpos = get_mpos();
-
     if (point_in_bb(mpos)){
-        hovered_row = mpos.y / (8*scale_factor);
-
-        if (tv->GetPGE()->GetMouse(0).bPressed){
-            selected_row = hovered_row;
-            selected_var = hovered_var;
-            manager->wave_list_select_var(selected_var);
+        int hovered_row = mpos.y / (8*scale_factor);
+        if (hovered_row < draw_list.size()){
+            std::get<1>(draw_list[hovered_row]) = true;
+            if(tv->GetPGE()->GetMouse(0).bPressed){
+                manager->wave_list_select_var(std::get<0>(draw_list[hovered_row]));
+                selected_row = hovered_row;
+            }
         }
     }
 }
@@ -81,22 +97,21 @@ void WaveList::draw() {
     if (!scope) return;
 
     int row = 0;
-    for (auto& [name, var] : scope->identifier_to_var){
+    for (auto& [var, highlight] : draw_list){
         olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
-        hovered_var = var;
-        if (row == hovered_row || row == selected_row){
+        if (highlight){
             tv->FillRectDecal(
                 start_pos,
                 {float(size.x), 8*scale_factor}, olc::WHITE
             );
             tv->DrawStringDecal(
                 start_pos,
-                name, olc::BLACK, {scale_factor, scale_factor}
+                var->identifier, olc::BLACK, {scale_factor, scale_factor}
             );
         } else {
             tv->DrawStringDecal(
                 start_pos,
-                name, olc::WHITE, {scale_factor, scale_factor}
+                var->identifier, olc::WHITE, {scale_factor, scale_factor}
             );
         }
         row++;
