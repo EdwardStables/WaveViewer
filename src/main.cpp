@@ -1,7 +1,6 @@
 #include <iostream>
 #include "store.h"
 #include "wave_viewer.h"
-#include "view_manager.h"
 
 int main() {
     Store* s = build_store("../../vcd_parse/samples/spec_example.vcd");

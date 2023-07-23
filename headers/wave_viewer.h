@@ -2,14 +2,14 @@
 #include "store.h"
 #include "olcPixelGameEngine.h"
 #include "olcPGEX_TransformedView.h"
-#include "view_manager.h"
+#include "pane_base.h"
 class WaveViewer : public olc::PixelGameEngine {
     Store* store;
-    Manager manager;
+    PaneManager manager;
 
 public:
     WaveViewer(Store* store)
-        : store(store), manager(Manager(*this))
+        : store(store), manager(PaneManager(*this))
     {
         sAppName = "WaveViewer";
     }
