@@ -33,11 +33,51 @@ void Pane::draw() {
     draw_frame();
 }
 
+olc::vi2d Pane::get_mpos() {
+    return olc::vi2d(tv->ScreenToWorld(tv->GetPGE()->GetMousePos()));
+}
 
 void Heirarchy::update(float t) {
-
+    auto mpos = get_mpos();
+    if (point_in_bb(mpos)){
+        selected_row = mpos.y / (8*scale_factor);
+    }
 }
 
 void Heirarchy::draw() {
     draw_frame();
+
+    int row = 0;
+    int depth = 0;
+    Scope* s = store->top_scope;
+    draw_tree(row, depth, s);
+}
+
+void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
+    if (row == selected_row){
+        float width = size.x - depth * 8 * scale_factor;
+        tv->FillRectDecal(
+            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+            {width, 8*scale_factor}, olc::WHITE
+        );
+        tv->DrawStringDecal(
+            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+            scope->name, olc::BLACK, {scale_factor, scale_factor}
+        );
+    } else {
+        tv->DrawStringDecal(
+            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+            scope->name, olc::WHITE, {scale_factor, scale_factor}
+        );
+    }
+
+    row++;
+
+    if (scope->child_scopes.size()){
+        depth++;
+    }
+
+    for (auto c : scope->child_scopes){
+        draw_tree(row, depth, c.second);
+    }
 }

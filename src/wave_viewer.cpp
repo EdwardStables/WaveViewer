@@ -3,13 +3,12 @@
 
 bool WaveViewer::OnUserCreate() {
     //test panes
-    Pane* p1 = new Pane();
-    p1->set_size({100,100});
-    manager.add_pane(p1, {30,30});
-
-    Pane* p2 = new Pane();
-    p2->set_size({200,200});
-    manager.add_pane(p2, {60,60});
+    Pane* p1 = new Heirarchy(store);
+    
+    olc::vf2d p1_size = GetScreenSize()-olc::vi2d(2,2);
+    p1_size.x *= 0.2f;
+    p1->set_size(p1_size);
+    manager.add_pane(p1, {1,1});
 
 	return true;
 }
