@@ -7,6 +7,8 @@ set(VCD_PARSER_DIR vcd_parse)
 add_executable(wavey
     src/main.cpp
     src/wave_viewer.cpp
+    src/view_manager.cpp
+    src/panes.cpp
     src/olcPixelGameEngine.cpp
 )
 

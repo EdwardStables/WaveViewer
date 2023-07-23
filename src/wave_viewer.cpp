@@ -1,12 +1,22 @@
 #include "wave_viewer.h"
+#include "panes.h"
 
 bool WaveViewer::OnUserCreate() {
+    //test panes
+    Pane* p1 = new Pane();
+    p1->set_size({100,100});
+    manager.add_pane(p1, {30,30});
+
+    Pane* p2 = new Pane();
+    p2->set_size({200,200});
+    manager.add_pane(p2, {60,60});
+
 	return true;
 }
 
 bool WaveViewer::OnUserUpdate(float fElapsedTime) {
-	for (int x = 0; x < ScreenWidth(); x++)
-		for (int y = 0; y < ScreenHeight(); y++)
-			Draw(x, y, olc::Pixel(rand() % 256, rand() % 256, rand() % 256));
+    manager.update(fElapsedTime);
+    manager.draw();
+
 	return true;
 }
