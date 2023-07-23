@@ -8,18 +8,16 @@ class Manager;
 
 class Heirarchy : public Pane {
     Store* store;
-    int hovered_row;
-    int selected_row;
-    Scope* hovered_scope = nullptr;
-    Scope* selected_scope = nullptr;
     float scale_factor = 2.0f;
+    int selected_row = -1;
+    std::vector<std::tuple<int,Scope*,bool>> draw_list;
 public:
     Heirarchy(Manager* manager, olc::TransformedView* tv, Store* store) : Pane(manager, tv), store(store) {};
     Heirarchy(Manager* manager, Store* store) : Pane(manager), store(store) {};
     virtual void update(float t) override;
     virtual void draw() override;
 
-    void draw_tree(int& row, int depth, Scope* current_scope);
+    void build_draw_list(int& row, int depth, Scope* current_scope);
 };
 
 class WaveList : public Pane {

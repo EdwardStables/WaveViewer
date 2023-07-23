@@ -2,53 +2,63 @@
 #include "manager.h"
 
 void Heirarchy::update(float t) {
+    //TODO: don't need to clear this every frame
+    int saved_selected = selected_row;
+    draw_list.clear();    
+    int row = 0;
+    build_draw_list(row, 0, store->top_scope);
+    if (saved_selected != -1 && saved_selected < draw_list.size()){
+        std::get<2>(draw_list[saved_selected]) = true;
+    }
+
     auto mpos = get_mpos();
     if (point_in_bb(mpos)){
-        hovered_row = mpos.y / (8*scale_factor);
-        if (tv->GetPGE()->GetMouse(0).bPressed){
-            selected_row = hovered_row;
-            selected_scope = hovered_scope;
-            manager->heirarchy_focus_scope(selected_scope);
+        int hovered_row = mpos.y / (8*scale_factor);
+        if (hovered_row < draw_list.size()){
+            std::get<2>(draw_list[hovered_row]) = true;
+            if(tv->GetPGE()->GetMouse(0).bPressed){
+                manager->heirarchy_focus_scope(std::get<1>(draw_list[hovered_row]));
+                selected_row = hovered_row;
+            }
         }
     }
 }
 
 void Heirarchy::draw() {
     draw_frame();
-
     int row = 0;
-    int depth = 0;
-    Scope* s = store->top_scope;
-    draw_tree(row, depth, s);
+    for (auto [depth, scope, highlight] : draw_list){
+        float width = size.x - depth * 8 * scale_factor;
+        if (highlight){
+            tv->FillRectDecal(
+                olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+                {width, 8*scale_factor}, olc::WHITE
+            );
+            tv->DrawStringDecal(
+                olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+                scope->name, olc::BLACK, {scale_factor, scale_factor}
+            );
+        } else {
+            tv->DrawStringDecal(
+                olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
+                scope->name, olc::WHITE, {scale_factor, scale_factor}
+            );
+        }
+        row++;
+    }
 }
 
-void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
-    if (row == hovered_row || row == selected_row){
-        float width = size.x - depth * 8 * scale_factor;
-        hovered_scope = scope;
-        tv->FillRectDecal(
-            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
-            {width, 8*scale_factor}, olc::WHITE
-        );
-        tv->DrawStringDecal(
-            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
-            scope->name, olc::BLACK, {scale_factor, scale_factor}
-        );
-    } else {
-        tv->DrawStringDecal(
-            olc::vf2d{float(depth),float(row)} * 8 * scale_factor,
-            scope->name, olc::WHITE, {scale_factor, scale_factor}
-        );
-    }
-
+void Heirarchy::build_draw_list(int& row, int depth, Scope* scope) {
     row++;
+
+    draw_list.push_back(std::make_tuple(depth, scope, false));
 
     if (scope->child_scopes.size()){
         depth++;
     }
 
     for (auto c : scope->child_scopes){
-        draw_tree(row, depth, c.second);
+        build_draw_list(row, depth, c.second);
     }
 }
 
