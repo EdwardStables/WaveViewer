@@ -1,4 +1,5 @@
 #include "panes.h"
+#include "manager.h"
 
 void Heirarchy::update(float t) {
     auto mpos = get_mpos();
@@ -7,6 +8,7 @@ void Heirarchy::update(float t) {
         if (tv->GetPGE()->GetMouse(0).bPressed){
             selected_row = hovered_row;
             selected_scope = hovered_scope;
+            manager->heirarchy_focus_scope(selected_scope);
         }
     }
 }
@@ -18,10 +20,6 @@ void Heirarchy::draw() {
     int depth = 0;
     Scope* s = store->top_scope;
     draw_tree(row, depth, s);
-}
-
-Scope* Heirarchy::get_selected_scope() {
-    return selected_scope;
 }
 
 void Heirarchy::draw_tree(int& row, int depth, Scope* scope) {
@@ -63,6 +61,7 @@ void WaveList::update(float t) {
         if (tv->GetPGE()->GetMouse(0).bPressed){
             selected_row = hovered_row;
             selected_var = hovered_var;
+            manager->wave_list_select_var(selected_var);
         }
     }
 }
@@ -96,12 +95,6 @@ void WaveList::draw() {
 
 void WaveList::set_scope(Scope* scope) {
     this->scope = scope;
-}
-
-Var* WaveList::get_selected_var() {
-    Var* s = selected_var;
-    selected_var = nullptr;
-    return s;
 }
 
 void WavePane::update(float t) {

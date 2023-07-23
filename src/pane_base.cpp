@@ -57,14 +57,6 @@ void PaneManager::update(float t) {
         w->update(t);
     }
 
-    //horrible hard-coding, need to replace with messaging system
-    Scope* selected_scope = dynamic_cast<Heirarchy*>(pane_stack[0])->get_selected_scope();
-    if (selected_scope)
-        dynamic_cast<WaveList*>(pane_stack[1])->set_scope(selected_scope);
-    Var* selected_var = dynamic_cast<WaveList*>(pane_stack[1])->get_selected_var();
-    if (selected_var)
-        dynamic_cast<WavePane*>(pane_stack[2])->add_wave(selected_var);
-
 /* Pane overlap testing */
 //    for (auto p : pane_stack) {
 //        p->fill_colour = olc::BLACK;

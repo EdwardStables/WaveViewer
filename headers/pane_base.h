@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <vector>
 
+class Manager;
+
 class Pane {
 public: //temp
     olc::vi2d size;
@@ -12,8 +14,9 @@ public: //temp
     olc::Pixel border_colour = olc::WHITE;
 public:
     olc::TransformedView* tv;
-    Pane(olc::TransformedView* tv) : tv(tv) {};
-    Pane() : tv(nullptr) {};
+    Manager* manager;
+    Pane(Manager* manager, olc::TransformedView* tv) : manager(manager), tv(tv) {};
+    Pane(Manager* manager) : manager(manager), tv(nullptr) {};
     virtual void update(float t);
     virtual void draw();
     virtual void draw_frame() final;
