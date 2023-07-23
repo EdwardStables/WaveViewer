@@ -122,3 +122,7 @@ void WaveList::draw() {
         row++;
     }
 }
+
+void WaveList::set_scope(Scope* scope) {
+    this->scope = scope;
+}
