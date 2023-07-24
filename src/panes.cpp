@@ -134,12 +134,12 @@ void WavePane::draw() {
         olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         tv->DrawStringDecal(
             start_pos,
-            w, olc::WHITE, {scale_factor, scale_factor}
+            w->identifier, olc::WHITE, {scale_factor, scale_factor}
         );
         row++;
     }
 }
 
 void WavePane::add_wave(Var* var) {
-    waves.push_back(var->identifier);
+    waves.push_back(var);
 }
