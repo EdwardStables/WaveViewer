@@ -36,6 +36,7 @@ public:
 class WavePane : public Pane {
     std::vector<Var*> waves;
     float scale_factor = 2.0f;
+    int gap = 4;
 public:
     WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};
     WavePane(Manager* manager) : Pane(manager) {};

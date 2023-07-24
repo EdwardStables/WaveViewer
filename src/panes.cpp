@@ -137,6 +137,7 @@ void WavePane::draw() {
     int row = 0;
     for (auto& w : waves){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
+        row_start.y += gap*row;
         tv->DrawStringDecal(
             row_start,
             w->identifier, olc::WHITE, {scale_factor, scale_factor}
@@ -147,6 +148,8 @@ void WavePane::draw() {
             int last_time = min_time;
             BitVector* last_value = w->value_at(min_time);
             for (auto& [time, value] : w->values) {
+                //TODO: needs extra call at the final time interval
+                //ie, all of this inner loop needs moving to a function (or several)
 
                 olc::Pixel colour;
                 int voffset;
