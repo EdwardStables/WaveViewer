@@ -128,16 +128,67 @@ void WavePane::update(float t) {
 
 void WavePane::draw() {
     draw_frame();
+
+    int wave_x = 100;
+    int min_time = 0;
+    int max_time = 2300;
+    int wave_width = size.x - wave_x;
     
     int row = 0;
     for (auto& w : waves){
-        olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
+        olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         tv->DrawStringDecal(
-            start_pos,
+            row_start,
             w->identifier, olc::WHITE, {scale_factor, scale_factor}
         );
         row++;
+
+        if (w->size == 1){
+            int last_time = min_time;
+            BitVector* last_value = w->value_at(min_time);
+            for (auto& [time, value] : w->values) {
+
+                olc::Pixel colour;
+                int voffset;
+
+                //TODO: should use this
+                switch((*last_value)[0]){
+                    case BitVector::Bit::X:
+                        colour = olc::RED;
+                        voffset = 4*scale_factor;
+                        break;
+                    case BitVector::Bit::Z:
+                        colour = olc::Pixel(0xFFA500);//orange
+                        voffset = 4*scale_factor;
+                        break;
+                    case BitVector::Bit::_0:
+                        colour = olc::GREEN;
+                        voffset = 8*scale_factor;
+                        break;
+                    case BitVector::Bit::_1:
+                        colour = olc::GREEN;
+                        voffset = 0;
+                        break;
+                }
+
+                //time to pix 
+                int start_pos = (last_time - min_time)  * wave_width / (max_time - min_time);
+                int end_pos = (time - min_time)  * wave_width / (max_time - min_time);
+
+                olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, voffset);
+                olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
+
+                tv->DrawLineDecal(draw_start, draw_stop, colour);
+                
+                last_time = time;
+                last_value = value;
+            }
+        }
     }
+
+
+
+
 }
 
 void WavePane::add_wave(Var* var) {
