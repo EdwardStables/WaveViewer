@@ -151,7 +151,6 @@ void WavePane::draw() {
                 olc::Pixel colour;
                 int voffset;
 
-                //TODO: should use this
                 switch((*last_value)[0]){
                     case BitVector::Bit::X:
                         colour = olc::RED;
@@ -179,9 +178,53 @@ void WavePane::draw() {
                 olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
 
                 tv->DrawLineDecal(draw_start, draw_stop, colour);
-                
+
+                BitVector::Bit last = (*last_value)[0]; 
+                BitVector::Bit curr = (*value)[0]; 
+
                 last_time = time;
                 last_value = value;
+
+                if (last == curr ||
+                    last == BitVector::Bit::Z && curr == BitVector::Bit::X ||
+                    last == BitVector::Bit::X && curr == BitVector::Bit::Z
+                ) {
+                    continue;
+                }
+
+                switch((*value)[0]){
+                    case BitVector::Bit::X:
+                        colour = olc::RED;
+                        break;
+                    case BitVector::Bit::Z:
+                        colour = olc::Pixel(0xFFA500);//orange
+                        break;
+                    case BitVector::Bit::_0:
+                        colour = olc::GREEN;
+                        break;
+                    case BitVector::Bit::_1:
+                        colour = olc::GREEN;
+                        break;
+                }
+
+                
+                olc::vi2d start = draw_stop;  
+                olc::vi2d stop = start;  
+                //line from center
+                switch(curr){
+                    case BitVector::Bit::X:
+                    case BitVector::Bit::Z:
+                        stop.y = row_start.y + 4*scale_factor;
+                        break;
+                    case BitVector::Bit::_0:
+                        stop.y = row_start.y + 8*scale_factor;
+                        break;
+                    default: //1
+                        stop.y = row_start.y;
+                }
+
+                tv->DrawLineDecal(start, stop, colour);
+
             }
         }
     }
