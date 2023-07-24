@@ -35,6 +35,7 @@ public:
 
 class WavePane : public Pane {
     std::vector<std::string> waves;
+    float scale_factor = 2.0f;
 public:
     WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};
     WavePane(Manager* manager) : Pane(manager) {};

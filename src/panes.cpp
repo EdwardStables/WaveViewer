@@ -128,12 +128,18 @@ void WavePane::update(float t) {
 
 void WavePane::draw() {
     draw_frame();
-    for (auto& w : waves)
-        std::cout << w << " ";
-    std::cout << std::endl;
+    
+    int row = 0;
+    for (auto& w : waves){
+        olc::vf2d start_pos = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
+        tv->DrawStringDecal(
+            start_pos,
+            w, olc::WHITE, {scale_factor, scale_factor}
+        );
+        row++;
+    }
 }
 
 void WavePane::add_wave(Var* var) {
-    std::cout << var->identifier << std::endl;
     waves.push_back(var->identifier);
 }
