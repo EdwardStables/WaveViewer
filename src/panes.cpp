@@ -149,7 +149,7 @@ void WavePane::draw() {
     int row = 0;
     for (auto& w : waves){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
-        row_start.y += gap*row;
+        row_start.y += gap*(row+1);
         tv->DrawStringDecal(
             row_start,
             w->identifier, olc::WHITE, {scale_factor, scale_factor}
@@ -160,6 +160,14 @@ void WavePane::draw() {
             int last_time = min_time;
             BitVector* last_value = w->value_at(min_time);
             for (auto& [time, value] : w->values) {
+
+                //skip this iteration when the minimum time is not zero
+                if (time < min_time){
+                    last_time = time;
+                    last_value = value;
+                    continue;
+                }
+
                 //TODO: needs extra call at the final time interval
                 //ie, all of this inner loop needs moving to a function (or several)
 
@@ -192,13 +200,24 @@ void WavePane::draw() {
                 olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, voffset);
                 olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
 
-                tv->DrawLineDecal(draw_start, draw_stop, colour);
+                //important update
+                last_time = time;
+                last_value = value;
+
+                //don't draw hidden segments
+                if (draw_stop.x < wave_x) {
+                    continue;
+                }
+
+                //cut the left side off partial segments
+                if (draw_start.x < wave_x) {
+                    draw_start.x = wave_x;
+                }
 
                 BitVector::Bit last = (*last_value)[0]; 
                 BitVector::Bit curr = (*value)[0]; 
 
-                last_time = time;
-                last_value = value;
+                tv->DrawLineDecal(draw_start, draw_stop, colour);
 
                 if (last == curr ||
                     last == BitVector::Bit::Z && curr == BitVector::Bit::X ||
