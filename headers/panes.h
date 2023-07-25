@@ -47,14 +47,23 @@ class WavePane : public Pane {
 
     float scale_factor = 2.0f;
     int gap = 4;
+    int wave_x = 100;
+    int wave_width;
+
 public:
     WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};
     WavePane(Manager* manager) : Pane(manager) {
-        
         min_slider = new olc::QuickGUI::Slider(guiManager, { 600.0f, 800.0f }, { 900.0f, 800.0f }, min_time_limit, max_time_limit, min_time_limit);
         max_slider = new olc::QuickGUI::Slider(guiManager, { 1000.0f, 800.0f }, { 1300.0f, 800.0f }, min_time_limit, max_time_limit, max_time_limit);
     };
     virtual void update(float t) override;
     virtual void draw() override;
     void add_wave(Var* var);
+
+private:
+    void render_single_bit_wave(Var*& w, olc::vf2d row_start);
+    void render_single_bit_line_segment(Var*& w, olc::vf2d row_start);
+    void render_single_bit_line_segment(
+        BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start
+    );
 };
