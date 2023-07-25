@@ -123,16 +123,28 @@ void WaveList::set_scope(Scope* scope) {
 }
 
 void WavePane::update(float t) {
+    guiManager.Update(tv->GetPGE());
+    if (max_slider->fValue < 100.0f){
+        max_slider->fValue = 100.0f;
+    }
+    if (min_slider->fValue > max_slider->fValue - 100.0f){
+        min_slider->fValue = max_slider->fValue - 100.0f;
+    }
 
+    min_time = min_slider->fValue;
+    max_time = max_slider->fValue;
 }
 
 void WavePane::draw() {
     draw_frame();
 
+    guiManager.DrawDecal(tv->GetPGE());
+
     int wave_x = 100;
-    int min_time = 0;
-    int max_time = 2300;
     int wave_width = size.x - wave_x;
+
+    tv->DrawStringDecal({wave_x, size.y-16}, std::to_string(min_time));
+    tv->DrawStringDecal({wave_x + 8*16, size.y-16}, std::to_string(max_time));
     
     int row = 0;
     for (auto& w : waves){
