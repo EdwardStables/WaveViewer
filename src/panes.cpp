@@ -200,6 +200,9 @@ void WavePane::draw() {
                 olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, voffset);
                 olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
 
+                BitVector::Bit last = (*last_value)[0]; 
+                BitVector::Bit curr = (*value)[0]; 
+
                 //important update
                 last_time = time;
                 last_value = value;
@@ -213,9 +216,6 @@ void WavePane::draw() {
                 if (draw_start.x < wave_x) {
                     draw_start.x = wave_x;
                 }
-
-                BitVector::Bit last = (*last_value)[0]; 
-                BitVector::Bit curr = (*value)[0]; 
 
                 tv->DrawLineDecal(draw_start, draw_stop, colour);
 
