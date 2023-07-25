@@ -202,13 +202,18 @@ void WavePane::render_single_bit_line_segment(BitVector* value, int time, BitVec
     last_value = value;
 
     //don't draw hidden segments
-    if (draw_stop.x < wave_x) {
+    if (draw_stop.x < wave_x || draw_start.x > size.x) {
         return;
     }
 
     //cut the left side off partial segments
     if (draw_start.x < wave_x) {
         draw_start.x = wave_x;
+    }
+
+    //and the right side off partial segments
+    if (draw_stop.x > size.x) {
+        draw_stop.x = size.x;
     }
 
     tv->DrawLineDecal(draw_start, draw_stop, colour);
