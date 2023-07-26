@@ -61,9 +61,11 @@ public:
     void add_wave(Var* var);
 
 private:
-    void render_single_bit_wave(Var*& w, olc::vf2d row_start);
-    void render_single_bit_line_segment(Var*& w, olc::vf2d row_start);
+    void render_wave(Var*& w, olc::vf2d row_start);
     void render_single_bit_line_segment(
+        BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start
+    );
+    void render_vector_line_segment(
         BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start
     );
 };
