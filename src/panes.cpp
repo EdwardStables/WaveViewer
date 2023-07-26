@@ -183,8 +183,7 @@ olc::Pixel WavePane::get_line_colour(BitVector*& value) {
     }
 }
 
-void WavePane::render_single_bit_line_segment(BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop, BitVector::Bit last, BitVector::Bit curr, olc::vi2d row_start) {
-    olc::Pixel colour = get_line_colour(last_value);
+void WavePane::render_single_bit_line_segment(olc::Pixel colour, BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop, BitVector::Bit last, BitVector::Bit curr, olc::vi2d row_start) {
     tv->DrawLineDecal(draw_start, draw_stop, colour);
 
     if (last == curr ||
@@ -214,8 +213,7 @@ void WavePane::render_single_bit_line_segment(BitVector* last_value, olc::vi2d d
     tv->DrawLineDecal(start, stop, colour);
 }
 
-void WavePane::render_vector_line_segment(BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop) {
-    olc::Pixel colour = get_line_colour(last_value);
+void WavePane::render_vector_line_segment(olc::Pixel colour, BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop) {
     tv->DrawRectDecal(draw_start, draw_stop - draw_start, colour);
 }
            
@@ -230,7 +228,7 @@ void WavePane::render_wave(Var*& w, olc::vf2d row_start) {
             last_value = value;
             continue;
         }
-        render_line_segment(w->value_at(time), time, last_value, last_time, row_start);
+        render_line_segment(value, time, last_value, last_time, row_start);
     }
     render_line_segment(w->value_at(max_time), max_time, last_value, last_time, row_start);
 }
@@ -253,11 +251,14 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
     int start_pos = (last_time - min_time)  * wave_width / (max_time - min_time);
     int end_pos = (time - min_time)  * wave_width / (max_time - min_time);
 
-    olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, 0);
+    olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, vector ? 0 : voffset);
     olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
 
     BitVector::Bit last = (*last_value)[0]; 
     BitVector::Bit curr = (*value)[0]; 
+
+
+    olc::Pixel colour = get_line_colour(last_value);
 
     //important update
     last_time = time;
@@ -279,9 +280,9 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
     }
 
     if (vector){
-        render_vector_line_segment(last_value, draw_start, draw_stop);
+        render_vector_line_segment(colour, last_value, draw_start, draw_stop);
     } else {
-        render_single_bit_line_segment(last_value, draw_start, draw_stop, last, curr, row_start);
+        render_single_bit_line_segment(colour, last_value, draw_start, draw_stop, last, curr, row_start);
     }
 }
 

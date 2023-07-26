@@ -66,10 +66,11 @@ private:
         BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start
     );
     void render_single_bit_line_segment(
+        olc::Pixel colour, 
         BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop,
         BitVector::Bit last, BitVector::Bit curr, olc::vi2d row_start
     );
-    void render_vector_line_segment(BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop);
+    void render_vector_line_segment(olc::Pixel colour, BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop);
 
     olc::Pixel get_line_colour(BitVector*& value);
 };
