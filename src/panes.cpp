@@ -158,35 +158,102 @@ void WavePane::draw() {
         render_wave(w, row_start);
     }
 }
+    
+olc::Pixel WavePane::get_line_colour(BitVector*& value) {
+    olc::Pixel orange = olc::Pixel(0xFF, 0xA5, 0x00, 0xFF);
 
-void WavePane::render_single_bit_line_segment(BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start) {
-    olc::Pixel colour;
-    int voffset;
+    if (value->width() == 1){
+        switch((*value)[0]){
+            case BitVector::Bit::X:  return olc::RED;
+            case BitVector::Bit::Z:  return orange;
+            case BitVector::Bit::_0: return olc::GREEN;
+            case BitVector::Bit::_1: return olc::GREEN;
+        }
+    } else {
+        //any X makes the whole thing red
+        //Z with no X makes it orange
+        olc::Pixel colour = olc::GREEN;
+        for (int i = 0; i < value->width(); i++){
+            if ((*value)[i] == BitVector::Bit::X)
+                return olc::RED;
+            if ((*value)[i] == BitVector::Bit::Z)
+                colour = orange;
+        }
+        return colour;
+    }
+}
 
-    switch((*last_value)[0]){
-        case BitVector::Bit::X:
-            colour = olc::RED;
-            voffset = 4*scale_factor;
-            break;
-        case BitVector::Bit::Z:
-            colour = olc::Pixel(0xFF, 0xA5, 0x00, 0xFF);//orange
-            voffset = 4*scale_factor;
-            break;
-        case BitVector::Bit::_0:
-            colour = olc::GREEN;
-            voffset = 8*scale_factor;
-            break;
-        case BitVector::Bit::_1:
-            colour = olc::GREEN;
-            voffset = 0;
-            break;
+void WavePane::render_single_bit_line_segment(BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop, BitVector::Bit last, BitVector::Bit curr, olc::vi2d row_start) {
+    olc::Pixel colour = get_line_colour(last_value);
+    tv->DrawLineDecal(draw_start, draw_stop, colour);
+
+    if (last == curr ||
+        last == BitVector::Bit::Z && curr == BitVector::Bit::X ||
+        last == BitVector::Bit::X && curr == BitVector::Bit::Z
+    ) {
+        return;
     }
 
-    //time to pix 
+    colour = get_line_colour(last_value);
+    
+    olc::vi2d start = draw_stop;  
+    olc::vi2d stop = start;  
+    //line from center
+    switch(curr){
+        case BitVector::Bit::X:
+        case BitVector::Bit::Z:
+            stop.y = row_start.y + 4*scale_factor;
+            break;
+        case BitVector::Bit::_0:
+            stop.y = row_start.y + 8*scale_factor;
+            break;
+        default: //1
+            stop.y = row_start.y;
+    }
+
+    tv->DrawLineDecal(start, stop, colour);
+}
+
+void WavePane::render_vector_line_segment(BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop) {
+    olc::Pixel colour = get_line_colour(last_value);
+    tv->DrawRectDecal(draw_start, draw_stop - draw_start, colour);
+}
+           
+void WavePane::render_wave(Var*& w, olc::vf2d row_start) {
+    int last_time = min_time;
+    BitVector* last_value = w->value_at(min_time);
+    for (auto& [time, value] : w->values) {
+
+        //skip this iteration when the minimum time is not zero
+        if (time < min_time){
+            last_time = time;
+            last_value = value;
+            continue;
+        }
+        render_line_segment(w->value_at(time), time, last_value, last_time, row_start);
+    }
+    render_line_segment(w->value_at(max_time), max_time, last_value, last_time, row_start);
+}
+
+void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start) {
+    bool vector = value->width() != 1;
+    int voffset;
+
+    if (vector){
+        voffset = 8 * scale_factor;
+    } else {
+        switch((*last_value)[0]){
+            case BitVector::Bit::X:
+            case BitVector::Bit::Z:  voffset = 4*scale_factor; break;
+            case BitVector::Bit::_0: voffset = 8*scale_factor; break;
+            case BitVector::Bit::_1: voffset = 0; break;
+        }
+    }
+
     int start_pos = (last_time - min_time)  * wave_width / (max_time - min_time);
     int end_pos = (time - min_time)  * wave_width / (max_time - min_time);
 
-    olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, voffset);
+    olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, 0);
     olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
 
     BitVector::Bit last = (*last_value)[0]; 
@@ -211,142 +278,10 @@ void WavePane::render_single_bit_line_segment(BitVector* value, int time, BitVec
         draw_stop.x = size.x;
     }
 
-    tv->DrawLineDecal(draw_start, draw_stop, colour);
-
-    if (last == curr ||
-        last == BitVector::Bit::Z && curr == BitVector::Bit::X ||
-        last == BitVector::Bit::X && curr == BitVector::Bit::Z
-    ) {
-        return;
-    }
-
-    switch((*value)[0]){
-        case BitVector::Bit::X:
-            colour = olc::RED;
-            break;
-        case BitVector::Bit::Z:
-            colour = olc::Pixel(0xFF, 0xA5, 0x00, 0xFF);//orange
-            break;
-        case BitVector::Bit::_0:
-            colour = olc::GREEN;
-            break;
-        case BitVector::Bit::_1:
-            colour = olc::GREEN;
-            break;
-    }
-
-    
-    olc::vi2d start = draw_stop;  
-    olc::vi2d stop = start;  
-    //line from center
-    switch(curr){
-        case BitVector::Bit::X:
-        case BitVector::Bit::Z:
-            stop.y = row_start.y + 4*scale_factor;
-            break;
-        case BitVector::Bit::_0:
-            stop.y = row_start.y + 8*scale_factor;
-            break;
-        default: //1
-            stop.y = row_start.y;
-    }
-
-    tv->DrawLineDecal(start, stop, colour);
-
-}
-
-void WavePane::render_vector_line_segment(BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start) {
-    //any X makes the whole thing red
-    //Z with no X makes it orange
-    olc::Pixel colour = olc::GREEN;
-    for (int i = 0; i < value->width(); i++){
-        if ((*value)[i] == BitVector::Bit::X){
-            colour = olc::RED;
-            break;
-        }
-        if ((*value)[i] == BitVector::Bit::Z)
-            colour = olc::Pixel(0xFF, 0xA5, 0x00, 0xFF);//orange
-    }
-
-    //time to pix 
-    int start_pos = (last_time - min_time)  * wave_width / (max_time - min_time);
-    int end_pos = (time - min_time)  * wave_width / (max_time - min_time);
-
-    olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, 0);
-    olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, 8*scale_factor);
-
-    BitVector::Bit last = (*last_value)[0]; 
-    BitVector::Bit curr = (*value)[0]; 
-
-    //important update
-    last_time = time;
-    last_value = value;
-
-    //don't draw hidden segments
-    if (draw_stop.x < wave_x || draw_start.x > size.x) {
-        return;
-    }
-
-    //cut the left side off partial segments
-    if (draw_start.x < wave_x) {
-        draw_start.x = wave_x;
-    }
-
-    //and the right side off partial segments
-    if (draw_stop.x > size.x) {
-        draw_stop.x = size.x;
-    }
-
-    tv->DrawRectDecal(draw_start, draw_stop - draw_start, colour);
-
-    if (last == curr ||
-        last == BitVector::Bit::Z && curr == BitVector::Bit::X ||
-        last == BitVector::Bit::X && curr == BitVector::Bit::Z
-    ) {
-        return;
-    }
-
-    colour = olc::GREEN;
-    for (int i = 0; i < value->width(); i++){
-        if ((*value)[i] == BitVector::Bit::X){
-            colour = olc::RED;
-            break;
-        }
-        if ((*value)[i] == BitVector::Bit::Z)
-            colour = olc::Pixel(0xFF, 0xA5, 0x00, 0xFF);//orange
-    }
-
-    
-    olc::vi2d start = draw_stop;  
-    olc::vi2d stop = start;
-    stop.y -= 8*scale_factor;  
-
-    tv->DrawLineDecal(start, stop, colour);
-
-}
-           
-void WavePane::render_wave(Var*& w, olc::vf2d row_start) {
-    int last_time = min_time;
-    BitVector* last_value = w->value_at(min_time);
-    for (auto& [time, value] : w->values) {
-
-        //skip this iteration when the minimum time is not zero
-        if (time < min_time){
-            last_time = time;
-            last_value = value;
-            continue;
-        }
-        if (w->size == 0){
-            render_single_bit_line_segment(value, time, last_value, last_time, row_start);
-        } else {
-            render_vector_line_segment(value, time, last_value, last_time, row_start);
-        }
-    }
-
-    if (w->size == 0){
-        render_single_bit_line_segment(w->value_at(max_time), max_time, last_value, last_time, row_start);
+    if (vector){
+        render_vector_line_segment(last_value, draw_start, draw_stop);
     } else {
-        render_vector_line_segment(w->value_at(max_time), max_time, last_value, last_time, row_start);
+        render_single_bit_line_segment(last_value, draw_start, draw_stop, last, curr, row_start);
     }
 }
 
