@@ -47,8 +47,19 @@ class WavePane : public Pane {
 
     float scale_factor = 2.0f;
     int gap = 4;
+    //initial offsets
     int wave_x = 100;
+    int wave_y = 20;
     int wave_width;
+
+    
+    enum {
+        NONE, FIRST_SELECTED, SECOND_SELECTED
+    } zoom_select_state = NONE;
+    int zoom_cancel_width = 10;
+    int minimum_time_width = 200;
+    int offset_grabbed_position_first;
+    int offset_grabbed_position_second;
 
 public:
     WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};
@@ -59,8 +70,10 @@ public:
     virtual void update(float t) override;
     virtual void draw() override;
     void add_wave(Var* var);
-
+    void reset_zoom();
 private:
+    int pixel_to_time(int pixel);
+    int time_to_pixel(int pixel);
     void render_wave(Var*& w, olc::vf2d row_start);
     void render_line_segment(
         BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start

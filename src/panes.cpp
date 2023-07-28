@@ -125,30 +125,92 @@ void WaveList::set_scope(Scope* scope) {
 void WavePane::update(float t) {
     wave_width = size.x - wave_x; 
 
-    guiManager.Update(tv->GetPGE());
-    if (max_slider->fValue < 100.0f){
-        max_slider->fValue = 100.0f;
-    }
-    if (min_slider->fValue > max_slider->fValue - 100.0f){
-        min_slider->fValue = max_slider->fValue - 100.0f;
+    /* Default reset key */
+    if (tv->GetPGE()->GetKey(olc::F).bPressed) reset_zoom();
+
+    /* mouse zoom handling */
+    //inputs
+    bool mdown = tv->GetPGE()->GetMouse(0).bPressed;
+    bool mup = tv->GetPGE()->GetMouse(0).bReleased;
+    auto mpos = get_mpos();
+    
+    //state update
+    if ((mdown || mup) && point_in_bb(mpos)){
+        if (zoom_select_state == NONE && mdown){
+            zoom_select_state = FIRST_SELECTED;
+            offset_grabbed_position_first = mpos.x;
+        }
+
+        if (zoom_select_state == FIRST_SELECTED && mup){
+            zoom_select_state = SECOND_SELECTED;
+        }
     }
 
-    min_time = min_slider->fValue;
-    max_time = max_slider->fValue;
+    if (zoom_select_state != NONE){
+        offset_grabbed_position_second = mpos.x;
+    }
+
+
+    //state resolution
+    if (zoom_select_state == SECOND_SELECTED){
+        int provisional_min_time = pixel_to_time(offset_grabbed_position_first-wave_x);
+        int provisional_max_time = pixel_to_time(offset_grabbed_position_second-wave_x);
+        if (
+            //if the zoom range is very narrow then just cancel
+            std::abs(offset_grabbed_position_first - offset_grabbed_position_second) > zoom_cancel_width ||
+            //if the new time range is smaller than the minimum time range then just cancel
+            provisional_max_time - provisional_min_time < minimum_time_width
+        ){
+            min_time = provisional_min_time;
+            max_time = provisional_max_time;
+        }
+
+        zoom_select_state = NONE;
+    }
+
+
+    if (max_time - min_time < minimum_time_width){
+        max_time = min_time + minimum_time_width;
+    }
+
+}
+
+void WavePane::reset_zoom() {
+    min_time = min_time_limit;
+    max_time = max_time_limit;
+}
+
+int WavePane::pixel_to_time(int pixel) {
+    float time_per_pixel = float(max_time - min_time) / std::max(wave_width, 1);
+    float time_offset = pixel * time_per_pixel;
+    int actual_time = int(time_offset) + min_time;
+    return actual_time;
+}
+
+int WavePane::time_to_pixel(int time) {
+    return (time - min_time)  * wave_width / (max_time - min_time);
 }
 
 void WavePane::draw() {
     draw_frame();
 
-    guiManager.DrawDecal(tv->GetPGE());
+    /* timeline */
+    int timeline_resolution = 100; //TODO: make this dynamic
+    int timeline_value = timeline_resolution * int(min_time / timeline_resolution);
+    while (timeline_value <= max_time) {
+        tv->DrawStringDecal({wave_x + time_to_pixel(timeline_value), 2}, std::to_string(timeline_value));
+        timeline_value += timeline_resolution;
+    }
 
+    /* min/max time debug info */
     tv->DrawStringDecal({wave_x, size.y-16}, std::to_string(min_time));
     tv->DrawStringDecal({wave_x + 8*16, size.y-16}, std::to_string(max_time));
-    
+
+    /* waves */
     int row = 0;
     for (auto& w : waves){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
-        row_start.y += gap*(row+1);
+        row_start.y += gap*(row+1) + wave_y;
         tv->DrawStringDecal(
             row_start,
             w->identifier, olc::WHITE, {scale_factor, scale_factor}
@@ -156,6 +218,15 @@ void WavePane::draw() {
         row++;
 
         render_wave(w, row_start);
+    }
+
+    /* zoom lines */
+    if (zoom_select_state != NONE){
+        tv->DrawLineDecal({float(offset_grabbed_position_first), 0}, {(offset_grabbed_position_first), size.y});
+        tv->DrawLineDecal({float(offset_grabbed_position_second), 0}, {(offset_grabbed_position_second), size.y});
+        tv->DrawStringDecal({(offset_grabbed_position_first), size.y - 24}, std::to_string(pixel_to_time(offset_grabbed_position_first-wave_x)));
+        tv->DrawStringDecal({(offset_grabbed_position_second), size.y - 24}, std::to_string(pixel_to_time(offset_grabbed_position_second-wave_x)));
+    
     }
 }
     
@@ -248,8 +319,8 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
         }
     }
 
-    int start_pos = (last_time - min_time)  * wave_width / (max_time - min_time);
-    int end_pos = (time - min_time)  * wave_width / (max_time - min_time);
+    int start_pos = time_to_pixel(last_time);
+    int end_pos = time_to_pixel(time);
 
     olc::vf2d draw_start = row_start + olc::vi2d(wave_x + start_pos, vector ? 0 : voffset);
     olc::vf2d draw_stop = row_start + olc::vi2d(wave_x + end_pos, voffset);
