@@ -7,6 +7,10 @@
 class WavePane : public Pane {
     std::vector<Var*> waves;
 
+    enum {
+        NAMES_AND_WAVES, VALUES_AND_WAVES
+    } display_mode = NAMES_AND_WAVES;
+
     int min_time_limit = 0;
     int max_time_limit = 2300;
     int min_time = min_time_limit;

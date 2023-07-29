@@ -6,6 +6,13 @@ void WavePane::update(float t) {
     /* Default reset key */
     if (tv->GetPGE()->GetKey(olc::F).bPressed) reset_zoom();
 
+    /* Draw state update */
+    if (tv->GetPGE()->GetKey(olc::V).bHeld) {
+        display_mode = VALUES_AND_WAVES;
+    } else {
+        display_mode = NAMES_AND_WAVES;
+    }
+
     /* mouse zoom handling */
     //inputs
     bool mdown = tv->GetPGE()->GetMouse(0).bPressed;
@@ -117,10 +124,17 @@ void WavePane::draw_waves() {
     for (auto& w : waves){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         row_start.y += gap*(row+1) + wave_y;
-        tv->DrawStringDecal(
-            row_start,
-            w->identifier, olc::WHITE, {scale_factor, scale_factor}
-        );
+        
+        if (display_mode == NAMES_AND_WAVES)
+            tv->DrawStringDecal(
+                row_start,
+                w->identifier, olc::WHITE, {scale_factor, scale_factor}
+            );
+        else
+            tv->DrawStringDecal(
+                row_start + olc::vf2d(0, 4.0f),
+                w->value_at(cursor_time)->as_hex_string(), olc::WHITE
+            );
         row++;
 
         render_wave(w, row_start);
