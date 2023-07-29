@@ -24,13 +24,19 @@ class WavePane : public Pane {
     int wave_y = 20;
     int wave_width;
 
+    //dividor range
+    int divider_range = 4;
+
     //cursor
     int cursor_time = min_time;
     
     //zoom
     enum {
-        NONE, FIRST_SELECTED, SECOND_SELECTED
-    } zoom_select_state = NONE;
+        NONE,
+        FIRST_SELECTED_ZOOM, SECOND_SELECTED_ZOOM,
+        FIRST_SELECTED_DIVIDER, SECOND_SELECTED_DIVIDER,
+    } mouse_select_state = NONE;
+    bool divider_hover = false;
     int zoom_cancel_width = 10;
     int minimum_time_width = 10;
     int grabbed_position_first;

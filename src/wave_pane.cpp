@@ -30,25 +30,45 @@ void WavePane::update(float t) {
     bool mup = tv->GetPGE()->GetMouse(0).bReleased;
     auto mpos = get_mpos();
     
+    //hover update
+    if (point_in_bb(mpos)){
+        divider_hover =
+            mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range &&
+            (
+                mouse_select_state == NONE ||
+                mouse_select_state == FIRST_SELECTED_DIVIDER ||
+                mouse_select_state == SECOND_SELECTED_DIVIDER
+            )
+        ;
+    }
+
     //state update
-    if ((mdown || mup) && point_in_bb(mpos)){
-        if (zoom_select_state == NONE && mdown){
-            zoom_select_state = FIRST_SELECTED;
+    if (point_in_bb(mpos)){
+        if (mouse_select_state == NONE && mdown){
+            if (mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range){
+                mouse_select_state = FIRST_SELECTED_DIVIDER;
+            } else {
+                mouse_select_state = FIRST_SELECTED_ZOOM;
+            }
             grabbed_position_first = mpos.x;
         }
 
-        if (zoom_select_state == FIRST_SELECTED && mup){
-            zoom_select_state = SECOND_SELECTED;
+        if (mouse_select_state == FIRST_SELECTED_ZOOM && mup){
+            mouse_select_state = SECOND_SELECTED_ZOOM;
+        }
+
+        if (mouse_select_state == FIRST_SELECTED_DIVIDER && mup){
+            mouse_select_state = SECOND_SELECTED_DIVIDER;
         }
     }
 
-    if (zoom_select_state != NONE){
+    if (mouse_select_state != NONE){
         grabbed_position_second = mpos.x;
     }
 
 
     //state resolution
-    if (zoom_select_state == SECOND_SELECTED){
+    if (mouse_select_state == SECOND_SELECTED_ZOOM){
         int provisional_min_time;
         int provisional_max_time;
 
@@ -74,9 +94,16 @@ void WavePane::update(float t) {
             max_time = provisional_max_time;
         }
 
-        zoom_select_state = NONE;
+        mouse_select_state = NONE;
     }
 
+    if (mouse_select_state == FIRST_SELECTED_DIVIDER) {
+        wave_x = grabbed_position_second;
+    }
+    if (mouse_select_state == SECOND_SELECTED_DIVIDER) {
+        wave_x = grabbed_position_second;
+        mouse_select_state = NONE;
+    }
 
     if (max_time - min_time < minimum_time_width){
         max_time = min_time + minimum_time_width;
@@ -157,7 +184,11 @@ void WavePane::draw_waves() {
 
 
 void WavePane::draw_zoom() {
-    if (zoom_select_state == NONE) return;
+    if (
+        mouse_select_state == NONE ||
+        mouse_select_state == FIRST_SELECTED_DIVIDER ||
+        mouse_select_state == SECOND_SELECTED_DIVIDER
+    ) return;
 
     olc::vf2d first_top = {float(grabbed_position_first), 0};
     olc::vf2d first_bottom = {float(grabbed_position_first), size.y};
@@ -187,7 +218,8 @@ void WavePane::draw() {
     draw_cursor();
 
     /* Name/Wave separator */
-    tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y});
+    olc::Pixel divider_colour = divider_hover ? olc::YELLOW : olc::WHITE;    
+    tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y}, divider_colour);
     tv->DrawRectDecal({0,0}, size, border_colour); //override default frame drawing and do it at the end
 }
     
