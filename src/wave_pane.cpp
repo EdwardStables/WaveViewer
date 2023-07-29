@@ -45,12 +45,15 @@ void WavePane::update(float t) {
     //state update
     if (point_in_bb(mpos)){
         if (mouse_select_state == NONE && mdown){
-            if (mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range){
+            if (mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range)
                 mouse_select_state = FIRST_SELECTED_DIVIDER;
-            } else {
+            else
                 mouse_select_state = FIRST_SELECTED_ZOOM;
-            }
-            grabbed_position_first = mpos.x;
+            
+            if (mouse_select_state == FIRST_SELECTED_ZOOM)
+                grabbed_position_first = std::max(mpos.x, wave_x);
+            else
+                grabbed_position_first = mpos.x;
         }
 
         if (mouse_select_state == FIRST_SELECTED_ZOOM && mup){
@@ -62,9 +65,10 @@ void WavePane::update(float t) {
         }
     }
 
-    if (mouse_select_state != NONE){
-        grabbed_position_second = mpos.x;
-    }
+    if (mouse_select_state == FIRST_SELECTED_ZOOM)
+        grabbed_position_second = std::max(mpos.x, wave_x);
+    else if (mouse_select_state == FIRST_SELECTED_DIVIDER)
+        grabbed_position_second = std::max(mpos.x, 0);
 
 
     //state resolution
