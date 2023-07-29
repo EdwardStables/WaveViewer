@@ -2,15 +2,26 @@
 
 void WavePane::update(float t) {
     wave_width = size.x - wave_x; 
+    auto pge = tv->GetPGE();
 
     /* Default reset key */
-    if (tv->GetPGE()->GetKey(olc::F).bPressed) reset_zoom();
+    if (pge->GetKey(olc::F).bPressed) reset_zoom();
 
     /* Draw state update */
-    if (tv->GetPGE()->GetKey(olc::V).bHeld) {
+    if (pge->GetKey(olc::V).bHeld) {
         display_mode = VALUES_AND_WAVES;
     } else {
         display_mode = NAMES_AND_WAVES;
+    }
+
+    /* Scrolling */
+    if (pge->GetMouseWheel() != 0 && waves.size()){
+        bool up = pge->GetMouseWheel() >= 0;
+        if (up){
+            scroll_start_index = std::max(0, scroll_start_index-1);
+        } else {
+            scroll_start_index = std::min(int(waves.size())-1, scroll_start_index+1);
+        }
     }
 
     /* mouse zoom handling */
@@ -121,9 +132,12 @@ void WavePane::draw_cursor() {
 
 void WavePane::draw_waves() {
     int row = 0;
-    for (auto& w : waves){
+    for (size_t i = scroll_start_index; i < waves.size(); i++){
+        auto w = waves[i];
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         row_start.y += gap*(row+1) + wave_y;
+
+        if (row_start.y > size.y) break;
         
         if (display_mode == NAMES_AND_WAVES)
             tv->DrawStringDecal(

@@ -6,6 +6,7 @@
 
 class WavePane : public Pane {
     std::vector<Var*> waves;
+    int scroll_start_index = 0;
 
     enum {
         NAMES_AND_WAVES, VALUES_AND_WAVES
