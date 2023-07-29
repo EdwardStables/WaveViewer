@@ -202,8 +202,6 @@ int WavePane::time_to_pixel(int time) {
 }
 
 void WavePane::draw() {
-    draw_frame();
-
     /* timeline */
     int timeline_resolution = std::pow(10, std::floor(std::log10(max_time - min_time)));
     if (((max_time - min_time) / timeline_resolution) < 5) timeline_resolution /= 10;
@@ -252,6 +250,10 @@ void WavePane::draw() {
         tv->GetPGE()->SetPixelMode(olc::Pixel::NORMAL);
     
     }
+
+    /* Name/Wave separator */
+    tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y});
+    tv->DrawRectDecal({0,0}, size, border_colour); //override default frame drawing and do it at the end
 }
     
 olc::Pixel WavePane::get_line_colour(BitVector*& value) {
