@@ -286,6 +286,9 @@ void WavePane::render_single_bit_line_segment(olc::Pixel colour, BitVector* last
 
 void WavePane::render_vector_line_segment(olc::Pixel colour, BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop) {
     tv->DrawRectDecal(draw_start, draw_stop - draw_start, colour);
+    tv->FillRectDecal(draw_start + olc::vf2d(1.0f, 1.0f), draw_stop - draw_start - olc::vf2d(1.0f, 1.0f) , olc::BLACK);
+    std::string s = last_value->as_hex_string();
+    tv->DrawStringDecal(draw_start + olc::vf2d{2.0f, 4.0f}, s);
 }
            
 void WavePane::render_wave(Var*& w, olc::vf2d row_start) {
