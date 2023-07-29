@@ -201,8 +201,7 @@ int WavePane::time_to_pixel(int time) {
     return (time - min_time)  * wave_width / (max_time - min_time);
 }
 
-void WavePane::draw() {
-    /* timeline */
+void WavePane::draw_timeline() {
     int timeline_resolution = std::pow(10, std::floor(std::log10(max_time - min_time)));
     if (((max_time - min_time) / timeline_resolution) < 5) timeline_resolution /= 10;
     int timeline_value = timeline_resolution * int(min_time / timeline_resolution);
@@ -214,12 +213,9 @@ void WavePane::draw() {
         }
         timeline_value += timeline_resolution;
     }
+}
 
-    /* min/max time debug info */
-    tv->DrawStringDecal({wave_x, size.y-16}, std::to_string(min_time));
-    tv->DrawStringDecal({wave_x + 8*16, size.y-16}, std::to_string(max_time));
-
-    /* waves */
+void WavePane::draw_waves() {
     int row = 0;
     for (auto& w : waves){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
@@ -232,24 +228,37 @@ void WavePane::draw() {
 
         render_wave(w, row_start);
     }
+}
 
-    /* zoom lines */
-    if (zoom_select_state != NONE){
-        olc::vf2d first_top = {float(grabbed_position_first), 0};
-        olc::vf2d first_bottom = {float(grabbed_position_first), size.y};
-        olc::vf2d second_top = {float(grabbed_position_second), 0};
-        olc::vf2d second_bottom = {float(grabbed_position_second), size.y};
-        tv->DrawLineDecal(first_top, first_bottom);
-        tv->DrawLineDecal(second_top, second_bottom);
-        tv->DrawStringDecal(first_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_first-wave_x)));
-        tv->DrawStringDecal(second_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_second-wave_x)));
-        
-        olc::vf2d highlight_size = second_bottom - first_top;
-        tv->GetPGE()->SetPixelMode(olc::Pixel::ALPHA);
-        tv->FillRectDecal(first_top, highlight_size , olc::Pixel(255, 255, 255, 64));
-        tv->GetPGE()->SetPixelMode(olc::Pixel::NORMAL);
+
+void WavePane::draw_zoom() {
+    if (zoom_select_state == NONE) return;
+
+    olc::vf2d first_top = {float(grabbed_position_first), 0};
+    olc::vf2d first_bottom = {float(grabbed_position_first), size.y};
+    olc::vf2d second_top = {float(grabbed_position_second), 0};
+    olc::vf2d second_bottom = {float(grabbed_position_second), size.y};
+
+    tv->DrawLineDecal(first_top, first_bottom);
+    tv->DrawLineDecal(second_top, second_bottom);
+    tv->DrawStringDecal(first_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_first-wave_x)));
+    tv->DrawStringDecal(second_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_second-wave_x)));
     
-    }
+    olc::vf2d highlight_size = second_bottom - first_top;
+    tv->GetPGE()->SetPixelMode(olc::Pixel::ALPHA);
+    tv->FillRectDecal(first_top, highlight_size , olc::Pixel(255, 255, 255, 64));
+    tv->GetPGE()->SetPixelMode(olc::Pixel::NORMAL);
+}
+
+void WavePane::draw() {
+    draw_timeline();
+
+    /* min/max time debug info */
+    tv->DrawStringDecal({wave_x, size.y-16}, std::to_string(min_time));
+    tv->DrawStringDecal({wave_x + 8*16, size.y-16}, std::to_string(max_time));
+
+    draw_waves();
+    draw_zoom();
 
     /* Name/Wave separator */
     tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y});

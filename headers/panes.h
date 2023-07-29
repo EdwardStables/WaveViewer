@@ -69,6 +69,9 @@ public:
     };
     virtual void update(float t) override;
     virtual void draw() override;
+    void draw_timeline();
+    void draw_waves();
+    void draw_zoom();
     void add_wave(Var* var);
     void reset_zoom();
 private:
