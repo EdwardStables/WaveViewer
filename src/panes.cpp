@@ -345,10 +345,6 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
 
     olc::Pixel colour = get_line_colour(last_value);
 
-    //important update
-    last_time = time;
-    last_value = value;
-
     //don't draw hidden segments
     if (draw_stop.x < wave_x || draw_start.x > size.x) {
         return;
@@ -369,6 +365,11 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
     } else {
         render_single_bit_line_segment(colour, last_value, draw_start, draw_stop, last, curr, row_start);
     }
+
+    //important update
+    last_time = time;
+    last_value = value;
+
 }
 
 void WavePane::add_wave(Var* var) {
