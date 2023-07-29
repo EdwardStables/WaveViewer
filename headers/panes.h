@@ -58,8 +58,8 @@ class WavePane : public Pane {
     } zoom_select_state = NONE;
     int zoom_cancel_width = 10;
     int minimum_time_width = 200;
-    int offset_grabbed_position_first;
-    int offset_grabbed_position_second;
+    int grabbed_position_first;
+    int grabbed_position_second;
 
 public:
     WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};

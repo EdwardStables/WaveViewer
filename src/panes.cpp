@@ -138,7 +138,7 @@ void WavePane::update(float t) {
     if ((mdown || mup) && point_in_bb(mpos)){
         if (zoom_select_state == NONE && mdown){
             zoom_select_state = FIRST_SELECTED;
-            offset_grabbed_position_first = mpos.x;
+            grabbed_position_first = mpos.x;
         }
 
         if (zoom_select_state == FIRST_SELECTED && mup){
@@ -147,17 +147,26 @@ void WavePane::update(float t) {
     }
 
     if (zoom_select_state != NONE){
-        offset_grabbed_position_second = mpos.x;
+        grabbed_position_second = mpos.x;
     }
 
 
     //state resolution
     if (zoom_select_state == SECOND_SELECTED){
-        int provisional_min_time = pixel_to_time(offset_grabbed_position_first-wave_x);
-        int provisional_max_time = pixel_to_time(offset_grabbed_position_second-wave_x);
+        int provisional_min_time;
+        int provisional_max_time;
+
+        if (grabbed_position_first < grabbed_position_second) {
+            provisional_min_time = pixel_to_time(grabbed_position_first-wave_x);
+            provisional_max_time = pixel_to_time(grabbed_position_second-wave_x);
+        } else {
+            provisional_min_time = pixel_to_time(grabbed_position_second-wave_x);
+            provisional_max_time = pixel_to_time(grabbed_position_first-wave_x);
+        }
+
         if (
             //if the zoom range is very narrow then just cancel
-            std::abs(offset_grabbed_position_first - offset_grabbed_position_second) > zoom_cancel_width ||
+            std::abs(grabbed_position_first - grabbed_position_second) > zoom_cancel_width ||
             //if the new time range is smaller than the minimum time range then just cancel
             provisional_max_time - provisional_min_time < minimum_time_width
         ){
@@ -222,10 +231,10 @@ void WavePane::draw() {
 
     /* zoom lines */
     if (zoom_select_state != NONE){
-        tv->DrawLineDecal({float(offset_grabbed_position_first), 0}, {(offset_grabbed_position_first), size.y});
-        tv->DrawLineDecal({float(offset_grabbed_position_second), 0}, {(offset_grabbed_position_second), size.y});
-        tv->DrawStringDecal({(offset_grabbed_position_first), size.y - 24}, std::to_string(pixel_to_time(offset_grabbed_position_first-wave_x)));
-        tv->DrawStringDecal({(offset_grabbed_position_second), size.y - 24}, std::to_string(pixel_to_time(offset_grabbed_position_second-wave_x)));
+        tv->DrawLineDecal({float(grabbed_position_first), 0}, {(grabbed_position_first), size.y});
+        tv->DrawLineDecal({float(grabbed_position_second), 0}, {(grabbed_position_second), size.y});
+        tv->DrawStringDecal({(grabbed_position_first), size.y - 24}, std::to_string(pixel_to_time(grabbed_position_first-wave_x)));
+        tv->DrawStringDecal({(grabbed_position_second), size.y - 24}, std::to_string(pixel_to_time(grabbed_position_second-wave_x)));
     
     }
 }
