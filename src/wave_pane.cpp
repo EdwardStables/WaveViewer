@@ -42,11 +42,15 @@ void WavePane::update(float t) {
             provisional_max_time = pixel_to_time(grabbed_position_first-wave_x);
         }
 
-        if (
+        //update cursor instead
+        if (grabbed_position_first == grabbed_position_second){
+            set_cursor(provisional_min_time);
+        }
+        else if (
             //if the zoom range is very narrow then just cancel
-            std::abs(grabbed_position_first - grabbed_position_second) > zoom_cancel_width ||
+            std::abs(grabbed_position_first - grabbed_position_second) > zoom_cancel_width && 
             //if the new time range is smaller than the minimum time range then just cancel
-            provisional_max_time - provisional_min_time < minimum_time_width
+            provisional_max_time - provisional_min_time > minimum_time_width
         ){
             min_time = provisional_min_time;
             max_time = provisional_max_time;
@@ -90,6 +94,20 @@ void WavePane::draw_timeline() {
         }
         timeline_value += timeline_resolution;
     }
+}
+
+void WavePane::set_cursor(int time) {
+    cursor_time = time;
+}
+
+int WavePane::get_cursor() {
+    return cursor_time;
+}
+
+void WavePane::draw_cursor() {
+    int pixel = time_to_pixel(cursor_time) + wave_x;
+
+    tv->DrawLineDecal({pixel, 0}, {pixel, size.y});
 }
 
 void WavePane::draw_waves() {
@@ -136,6 +154,7 @@ void WavePane::draw() {
 
     draw_waves();
     draw_zoom();
+    draw_cursor();
 
     /* Name/Wave separator */
     tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y});

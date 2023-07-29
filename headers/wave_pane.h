@@ -20,7 +20,7 @@ class WavePane : public Pane {
     int wave_width;
 
     //cursor
-    int cusor_time = min_time;
+    int cursor_time = min_time;
     
     //zoom
     enum {
@@ -46,6 +46,7 @@ private:
     void draw_timeline();
     void draw_waves();
     void draw_zoom();
+    void draw_cursor();
     void render_wave(Var*& w, olc::vf2d row_start);
     void render_line_segment(
         BitVector* value, int time, BitVector*& last_value, int& last_time, olc::vf2d row_start
