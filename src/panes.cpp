@@ -279,8 +279,6 @@ void WavePane::render_single_bit_line_segment(olc::Pixel colour, BitVector* last
         return;
     }
 
-    colour = get_line_colour(last_value);
-    
     olc::vi2d start = draw_stop;  
     olc::vi2d stop = start;  
     //line from center
