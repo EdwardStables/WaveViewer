@@ -105,6 +105,8 @@ int WavePane::get_cursor() {
 }
 
 void WavePane::draw_cursor() {
+    if (cursor_time < min_time || cursor_time > max_time) return;
+
     int pixel = time_to_pixel(cursor_time) + wave_x;
 
     tv->DrawLineDecal({pixel, 0}, {pixel, size.y});
