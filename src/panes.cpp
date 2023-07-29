@@ -1,5 +1,6 @@
 #include "panes.h"
 #include "manager.h"
+#include "math.h"
 
 void Heirarchy::update(float t) {
     //TODO: don't need to clear this every frame
@@ -204,10 +205,11 @@ void WavePane::draw() {
     draw_frame();
 
     /* timeline */
-    int timeline_resolution = 100; //TODO: make this dynamic
+    int timeline_resolution = std::pow(10, std::floor(std::log10(max_time - min_time))) / 10;
     int timeline_value = timeline_resolution * int(min_time / timeline_resolution);
     while (timeline_value <= max_time) {
-        tv->DrawStringDecal({wave_x + time_to_pixel(timeline_value), 2}, std::to_string(timeline_value));
+        tv->DrawLineDecal({wave_x + time_to_pixel(timeline_value), 0}, {wave_x + time_to_pixel(timeline_value), 10});
+        tv->DrawStringDecal({wave_x + time_to_pixel(timeline_value) + 2, 2}, std::to_string(timeline_value));
         timeline_value += timeline_resolution;
     }
 
