@@ -2,6 +2,7 @@
 
 #include "panes.h"
 #include "store.h"
+#include "wave_pane.h"
 
 struct Manager {
     Heirarchy* heirarchy;

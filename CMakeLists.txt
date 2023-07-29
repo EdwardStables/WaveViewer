@@ -10,6 +10,7 @@ add_executable(wavey
     src/manager.cpp
     src/pane_base.cpp
     src/panes.cpp
+    src/wave_pane.cpp
     src/olcPixelGameEngine.cpp
 )
 

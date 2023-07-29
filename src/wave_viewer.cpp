@@ -1,6 +1,7 @@
 #include "wave_viewer.h"
 #include "panes.h"
 #include "manager.h"
+#include "wave_pane.h"
 
 bool WaveViewer::OnUserCreate() {
 
