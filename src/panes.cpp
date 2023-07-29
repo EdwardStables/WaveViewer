@@ -237,10 +237,19 @@ void WavePane::draw() {
 
     /* zoom lines */
     if (zoom_select_state != NONE){
-        tv->DrawLineDecal({float(grabbed_position_first), 0}, {(grabbed_position_first), size.y});
-        tv->DrawLineDecal({float(grabbed_position_second), 0}, {(grabbed_position_second), size.y});
-        tv->DrawStringDecal({(grabbed_position_first), size.y - 24}, std::to_string(pixel_to_time(grabbed_position_first-wave_x)));
-        tv->DrawStringDecal({(grabbed_position_second), size.y - 24}, std::to_string(pixel_to_time(grabbed_position_second-wave_x)));
+        olc::vf2d first_top = {float(grabbed_position_first), 0};
+        olc::vf2d first_bottom = {float(grabbed_position_first), size.y};
+        olc::vf2d second_top = {float(grabbed_position_second), 0};
+        olc::vf2d second_bottom = {float(grabbed_position_second), size.y};
+        tv->DrawLineDecal(first_top, first_bottom);
+        tv->DrawLineDecal(second_top, second_bottom);
+        tv->DrawStringDecal(first_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_first-wave_x)));
+        tv->DrawStringDecal(second_bottom - olc::vf2d(0, 24), std::to_string(pixel_to_time(grabbed_position_second-wave_x)));
+        
+        olc::vf2d highlight_size = second_bottom - first_top;
+        tv->GetPGE()->SetPixelMode(olc::Pixel::ALPHA);
+        tv->FillRectDecal(first_top, highlight_size , olc::Pixel(255, 255, 255, 64));
+        tv->GetPGE()->SetPixelMode(olc::Pixel::NORMAL);
     
     }
 }
