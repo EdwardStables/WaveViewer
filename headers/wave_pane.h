@@ -8,6 +8,8 @@ class WavePane : public Pane {
     std::vector<Var*> waves;
     int scroll_start_index = 0;
 
+    int selected_index = -1;
+
     enum {
         NAMES_AND_WAVES, VALUES_AND_WAVES
     } display_mode = NAMES_AND_WAVES;

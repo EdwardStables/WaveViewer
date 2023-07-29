@@ -24,11 +24,27 @@ void WavePane::update(float t) {
         }
     }
 
+    /* Delete */
+    if (pge->GetKey(olc::X).bPressed && selected_index >= 0 && selected_index < waves.size()){
+        waves.erase(waves.begin() + selected_index);
+        selected_index = -1;
+    }
+
     /* mouse zoom handling */
     //inputs
-    bool mdown = tv->GetPGE()->GetMouse(0).bPressed;
-    bool mup = tv->GetPGE()->GetMouse(0).bReleased;
+    bool mdown = pge->GetMouse(0).bPressed;
+    bool mup = pge->GetMouse(0).bReleased;
     auto mpos = get_mpos();
+    
+    //signal select update
+    if (point_in_bb(mpos) && mdown &&
+        mpos.x > 0 && mpos.x <= wave_x - divider_range &&
+        mpos.y > wave_y
+    ){
+        int mx = mpos.y - wave_y;
+        int index = mx / (8*scale_factor + gap);
+        selected_index = index + scroll_start_index;
+    }
     
     //hover update
     if (point_in_bb(mpos)){
@@ -170,16 +186,26 @@ void WavePane::draw_waves() {
 
         if (row_start.y > size.y) break;
         
-        if (display_mode == NAMES_AND_WAVES)
+        if (display_mode == NAMES_AND_WAVES){
+            if (i == selected_index){
+                tv->FillRectDecal(
+                    row_start - olc::vf2d(1.0f, 0.0f),
+                    {wave_x, 8*scale_factor},
+                    olc::WHITE
+                );
+            }
             tv->DrawStringDecal(
                 row_start,
-                w->identifier, olc::WHITE, {scale_factor, scale_factor}
+                w->identifier,
+                i == selected_index ? olc::BLACK : olc::WHITE,
+                {scale_factor, scale_factor}
             );
-        else
+        } else {
             tv->DrawStringDecal(
                 row_start + olc::vf2d(0, 4.0f),
                 w->value_at(cursor_time)->as_hex_string(), olc::WHITE
             );
+        }
         row++;
 
         render_wave(w, row_start);
@@ -212,11 +238,6 @@ void WavePane::draw_zoom() {
 
 void WavePane::draw() {
     draw_timeline();
-
-    /* min/max time debug info */
-    tv->DrawStringDecal({wave_x, size.y-16}, std::to_string(min_time));
-    tv->DrawStringDecal({wave_x + 8*16, size.y-16}, std::to_string(max_time));
-
     draw_waves();
     draw_zoom();
     draw_cursor();
