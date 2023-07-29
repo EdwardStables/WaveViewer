@@ -57,7 +57,7 @@ class WavePane : public Pane {
         NONE, FIRST_SELECTED, SECOND_SELECTED
     } zoom_select_state = NONE;
     int zoom_cancel_width = 10;
-    int minimum_time_width = 200;
+    int minimum_time_width = 10;
     int grabbed_position_first;
     int grabbed_position_second;
 
