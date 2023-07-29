@@ -31,5 +31,5 @@ public:
     WaveList(Manager* manager) : Pane(manager) {};
     virtual void update(float t) override;
     virtual void draw() override;
-    void set_scope(Scope*);
+    void set_scope(Scope*, bool add_waves=false);
 };

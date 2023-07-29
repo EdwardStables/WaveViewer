@@ -18,7 +18,8 @@ void Heirarchy::update(float t) {
         if (hovered_row < draw_list.size()){
             std::get<2>(draw_list[hovered_row]) = true;
             if(tv->GetPGE()->GetMouse(0).bPressed){
-                manager->heirarchy_focus_scope(std::get<1>(draw_list[hovered_row]));
+                bool add_all_waves = tv->GetPGE()->GetKey(olc::SHIFT).bHeld;
+                manager->heirarchy_focus_scope(std::get<1>(draw_list[hovered_row]), add_all_waves);
                 selected_row = hovered_row;
             }
         }
@@ -119,6 +120,12 @@ void WaveList::draw() {
     }
 }
 
-void WaveList::set_scope(Scope* scope) {
+void WaveList::set_scope(Scope* scope, bool add_waves) {
     this->scope = scope;
+
+    if (!add_waves) return;
+
+    for (auto& [i, v] : this->scope->identifier_to_var){
+        manager->wave_list_select_var(v);
+    }
 }
