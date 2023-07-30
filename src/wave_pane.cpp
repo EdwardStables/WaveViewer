@@ -20,15 +20,11 @@ void WavePane::update(float t) {
     if (selected_index != -1 && (prev ^ next)){
         Var* selected_var = waves[selected_index];
         if (prev){
-            std::cout << selected_var->identifier << " prev " << cursor_time << " -> ";
-            cursor_time = selected_var->change_before_time(cursor_time);
-            std::cout << cursor_time << std::endl;
+            set_cursor(selected_var->change_before_time(cursor_time));
         }
 
         if (next){
-            std::cout << selected_var->identifier << " next " << cursor_time << " -> ";
-            cursor_time = selected_var->change_after_time(cursor_time);
-            std::cout << cursor_time << std::endl;
+            set_cursor(selected_var->change_after_time(cursor_time));
         }
     }
 
@@ -55,16 +51,6 @@ void WavePane::update(float t) {
     bool mup = pge->GetMouse(0).bReleased;
     auto mpos = get_mpos();
     
-    //signal select update
-    if (point_in_bb(mpos) && mdown &&
-        mpos.x > 0 && mpos.x <= wave_x - divider_range &&
-        mpos.y > wave_y
-    ){
-        int mx = mpos.y - wave_y;
-        int index = mx / (8*scale_factor + gap);
-        selected_index = index + scroll_start_index;
-    }
-    
     //hover update
     if (point_in_bb(mpos)){
         divider_hover =
@@ -80,31 +66,36 @@ void WavePane::update(float t) {
     //state update (zoom/cursor/divider)
     if (point_in_bb(mpos)){
         if (mouse_select_state == NONE && mdown){
-            if (mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range)
+            if (mpos.x < wave_x - divider_range) {
+                mouse_select_state = FIRST_SELECTED_SIGNAL;
+                grabbed_position_first = mpos.y;
+            } else
+            if (mpos.x < wave_x + divider_range){
                 mouse_select_state = FIRST_SELECTED_DIVIDER;
-            else
-                mouse_select_state = FIRST_SELECTED_ZOOM;
-            
-            if (mouse_select_state == FIRST_SELECTED_ZOOM)
-                grabbed_position_first = std::max(mpos.x, wave_x);
-            else
                 grabbed_position_first = mpos.x;
+            } else {
+                mouse_select_state = FIRST_SELECTED_ZOOM;
+                grabbed_position_first = std::max(mpos.x, wave_x);
+            }
         }
 
-        if (mouse_select_state == FIRST_SELECTED_ZOOM && mup){
-            mouse_select_state = SECOND_SELECTED_ZOOM;
+        if (mup){
+            switch(mouse_select_state){
+                case FIRST_SELECTED_SIGNAL:  mouse_select_state = SECOND_SELECTED_SIGNAL; break;
+                case FIRST_SELECTED_ZOOM:    mouse_select_state = SECOND_SELECTED_ZOOM; break;
+                case FIRST_SELECTED_DIVIDER: mouse_select_state = SECOND_SELECTED_DIVIDER; break;
+                default: break;
+            }
         }
 
-        if (mouse_select_state == FIRST_SELECTED_DIVIDER && mup){
-            mouse_select_state = SECOND_SELECTED_DIVIDER;
-        }
     }
 
-    if (mouse_select_state == FIRST_SELECTED_ZOOM)
-        grabbed_position_second = std::max(mpos.x, wave_x);
-    else if (mouse_select_state == FIRST_SELECTED_DIVIDER)
-        grabbed_position_second = std::max(mpos.x, 0);
-
+    switch(mouse_select_state){
+        case FIRST_SELECTED_SIGNAL:  grabbed_position_second = std::max(mpos.y, 0); break;
+        case FIRST_SELECTED_ZOOM:    grabbed_position_second = std::max(mpos.x, wave_x); break;
+        case FIRST_SELECTED_DIVIDER: grabbed_position_second = std::max(mpos.x, 0); break;
+        default: break;
+    }
 
     //state resolution
     if (mouse_select_state == SECOND_SELECTED_ZOOM){
@@ -136,14 +127,26 @@ void WavePane::update(float t) {
         mouse_select_state = NONE;
     }
 
-    if (mouse_select_state == FIRST_SELECTED_DIVIDER) {
+    if (mouse_select_state == FIRST_SELECTED_DIVIDER ||
+        mouse_select_state == SECOND_SELECTED_DIVIDER) {
         wave_x = grabbed_position_second;
     }
+
     if (mouse_select_state == SECOND_SELECTED_DIVIDER) {
-        wave_x = grabbed_position_second;
         mouse_select_state = NONE;
     }
 
+    if (mouse_select_state == FIRST_SELECTED_SIGNAL ||
+        mouse_select_state == SECOND_SELECTED_SIGNAL) {
+        int mx = grabbed_position_first - wave_y;
+        int index = mx / (8*scale_factor + gap);
+        selected_index = index + scroll_start_index;
+    }
+
+    if (mouse_select_state == SECOND_SELECTED_SIGNAL) {
+        mouse_select_state = NONE;
+    }
+    
     if (max_time - min_time < minimum_time_width){
         max_time = min_time + minimum_time_width;
     }
@@ -191,6 +194,8 @@ int WavePane::get_cursor() {
 void WavePane::draw_cursor() {
     if (cursor_time < min_time || cursor_time > max_time) return;
 
+    std::cout << cursor_time << std::endl;
+
     int pixel = time_to_pixel(cursor_time) + wave_x;
 
     tv->DrawLineDecal({pixel, 0}, {pixel, size.y});
@@ -233,10 +238,10 @@ void WavePane::draw_waves() {
 
 
 void WavePane::draw_zoom() {
-    if (
-        mouse_select_state == NONE ||
-        mouse_select_state == FIRST_SELECTED_DIVIDER ||
-        mouse_select_state == SECOND_SELECTED_DIVIDER
+    if ( !(
+            mouse_select_state == FIRST_SELECTED_ZOOM ||
+            mouse_select_state == SECOND_SELECTED_ZOOM
+        )
     ) return;
 
     olc::vf2d first_top = {float(grabbed_position_first), 0};

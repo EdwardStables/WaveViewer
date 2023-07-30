@@ -37,6 +37,7 @@ class WavePane : public Pane {
         NONE,
         FIRST_SELECTED_ZOOM, SECOND_SELECTED_ZOOM,
         FIRST_SELECTED_DIVIDER, SECOND_SELECTED_DIVIDER,
+        FIRST_SELECTED_SIGNAL, SECOND_SELECTED_SIGNAL,
     } mouse_select_state = NONE;
     bool divider_hover = false;
     int zoom_cancel_width = 10;
