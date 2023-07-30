@@ -28,6 +28,11 @@ void WavePane::update(float t) {
         }
     }
 
+    /* Cursor clamp */
+    if (pge->GetKey(olc::Y).bPressed){
+        clamp_cursor_to_center = !clamp_cursor_to_center;
+    }
+
 
     /* Scrolling */
     if (pge->GetMouseWheel() != 0 && waves.size()){
@@ -160,13 +165,21 @@ void WavePane::update(float t) {
         mouse_select_state = NONE;
     }
     
+    /* min/max time resolution */
     if (max_time - min_time < minimum_time_width){
         max_time = min_time + minimum_time_width;
     }
 
+    if (clamp_cursor_to_center){
+        std::cout << "clamping" << std::endl;
+        int time_width = max_time - min_time;
+        min_time = cursor_time - (time_width/2);
+        max_time = cursor_time + (time_width/2);
+    }
 }
 
 void WavePane::reset_zoom() {
+    clamp_cursor_to_center = false;
     min_time = min_time_limit;
     max_time = max_time_limit;
 }
@@ -353,16 +366,9 @@ void WavePane::render_vector_line_segment(olc::Pixel colour, BitVector* last_val
 }
            
 void WavePane::render_wave(Var*& w, olc::vf2d row_start) {
-    int last_time = min_time;
+    int last_time = std::max(min_time, 0);
     BitVector* last_value = w->value_at(min_time);
     for (auto& [time, value] : w->values) {
-
-        //skip this iteration when the minimum time is not zero
-        if (time < min_time){
-            last_time = time;
-            last_value = value;
-            continue;
-        }
         render_line_segment(value, time, last_value, last_time, row_start);
     }
     render_line_segment(w->value_at(max_time), max_time, last_value, last_time, row_start);

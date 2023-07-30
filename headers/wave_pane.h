@@ -31,6 +31,7 @@ class WavePane : public Pane {
     int divider_range = 4;
 
     //cursor
+    bool clamp_cursor_to_center = false;
     int cursor_time = min_time;
     
     //zoom
