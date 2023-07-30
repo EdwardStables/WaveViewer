@@ -9,6 +9,7 @@ class WavePane : public Pane {
     int scroll_start_index = 0;
 
     int selected_index = -1;
+    int selected_index_move = -1;
 
     enum {
         NAMES_AND_WAVES, VALUES_AND_WAVES

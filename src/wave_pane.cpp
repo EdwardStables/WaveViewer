@@ -138,12 +138,25 @@ void WavePane::update(float t) {
 
     if (mouse_select_state == FIRST_SELECTED_SIGNAL ||
         mouse_select_state == SECOND_SELECTED_SIGNAL) {
-        int mx = grabbed_position_first - wave_y;
-        int index = mx / (8*scale_factor + gap);
+        int mx1 = grabbed_position_first - wave_y;
+        int index = mx1 / (8*scale_factor + gap);
         selected_index = index + scroll_start_index;
+
+
+        int mx2 = grabbed_position_second - wave_y;
+        int index2 = mx2 / (8*scale_factor + gap);
+        selected_index_move = std::clamp(index2 + scroll_start_index, 0, int(waves.size()-1));
     }
 
     if (mouse_select_state == SECOND_SELECTED_SIGNAL) {
+        if (selected_index != selected_index_move){
+            Var* moving = waves[selected_index];
+            waves.erase(waves.begin() + selected_index);
+            waves.emplace(waves.begin() + selected_index_move, moving);
+            selected_index = selected_index_move;
+        }
+
+        selected_index_move = -1;
         mouse_select_state = NONE;
     }
     
@@ -194,8 +207,6 @@ int WavePane::get_cursor() {
 void WavePane::draw_cursor() {
     if (cursor_time < min_time || cursor_time > max_time) return;
 
-    std::cout << cursor_time << std::endl;
-
     int pixel = time_to_pixel(cursor_time) + wave_x;
 
     tv->DrawLineDecal({pixel, 0}, {pixel, size.y});
@@ -203,13 +214,23 @@ void WavePane::draw_cursor() {
 
 void WavePane::draw_waves() {
     int row = 0;
-    for (size_t i = scroll_start_index; i < waves.size(); i++){
-        auto w = waves[i];
+ 
+    //do one extra iteration to handle the movement indicator
+    for (size_t i = scroll_start_index; i <= waves.size(); i++){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         row_start.y += gap*(row+1) + wave_y;
 
         if (row_start.y > size.y) break;
         
+        if (
+            selected_index > selected_index_move && i == selected_index_move ||
+            selected_index < selected_index_move && i == selected_index_move + 1
+        ){
+            tv->DrawLineDecal(row_start + olc::vf2d(0.0f, -1.0f), row_start + olc::vf2d(wave_x, -1.0f));
+        }
+
+        if (i >= waves.size()) break;
+        auto w = waves[i];
         if (display_mode == NAMES_AND_WAVES){
             if (i == selected_index){
                 tv->FillRectDecal(
