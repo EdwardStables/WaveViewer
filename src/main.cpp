@@ -4,6 +4,8 @@
 
 int main() {
     Store* s = build_store("../../vcd_parse/samples/spec_example.vcd");
+    s->extend_all_to_zero();    
+
     WaveViewer* wave_viewer = new WaveViewer(s);
 
     if (wave_viewer->Construct(1920, 1080, 1, 1))
