@@ -5,7 +5,7 @@
 #include "olcPGEX_TransformedView.h"
 
 class WavePane : public Pane {
-    std::vector<Var*> waves;
+    std::vector<std::pair<std::string,Var*>> waves;
     int scroll_start_index = 0;
 
     int selected_index = -1;

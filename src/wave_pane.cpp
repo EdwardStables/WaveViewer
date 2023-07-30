@@ -18,7 +18,7 @@ void WavePane::update(float t) {
     bool prev = pge->GetKey(olc::N).bPressed;
     bool next = pge->GetKey(olc::M).bPressed;
     if (selected_index != -1 && (prev ^ next)){
-        Var* selected_var = waves[selected_index];
+        Var* selected_var = waves[selected_index].second;
         if (prev){
             set_cursor(selected_var->change_before_time(cursor_time));
         }
@@ -156,7 +156,7 @@ void WavePane::update(float t) {
 
     if (mouse_select_state == SECOND_SELECTED_SIGNAL) {
         if (selected_index != selected_index_move){
-            Var* moving = waves[selected_index];
+            auto moving = waves[selected_index];
             waves.erase(waves.begin() + selected_index);
             waves.emplace(waves.begin() + selected_index_move, moving);
             selected_index = selected_index_move;
@@ -204,9 +204,9 @@ void WavePane::draw_timeline() {
     while (timeline_value <= max_time) {
         if (timeline_value >= min_time){
             int pixel = time_to_pixel(timeline_value);
-            tv->DrawLineDecal({wave_x + pixel, 0}, {wave_x + pixel, 10}, olc::WHITE);
-            tv->DrawLineDecal({wave_x + pixel, 10}, {wave_x + pixel, size.y - 10}, olc::Pixel(0xFF, 0xFF, 0xFF, 32));
-            tv->DrawStringDecal({wave_x + pixel + 2, 2}, std::to_string(timeline_value));
+            tv->DrawLineDecal({float(wave_x + pixel), 0.0f},  {float(wave_x + pixel), 10.0f}, olc::WHITE);
+            tv->DrawLineDecal({float(wave_x + pixel), 10.0f}, {float(wave_x + pixel), float(size.y - 10)}, olc::Pixel(0xFF, 0xFF, 0xFF, 32));
+            tv->DrawStringDecal({float(wave_x + pixel + 2), 2.0f}, std::to_string(timeline_value));
         }
         timeline_value += timeline_resolution;
     }
@@ -226,16 +226,36 @@ void WavePane::draw_cursor() {
 
     int pixel = time_to_pixel(cursor_time) + wave_x;
 
-    tv->DrawLineDecal({pixel, 0}, {pixel, size.y});
+    tv->DrawLineDecal({float(pixel), 0.0f}, {float(pixel), float(size.y)});
 }
 
 void WavePane::draw_waves() {
     int row = 0;
  
+    if (waves.size() == 0){
+        return;
+    }
+
+    float group_space = 12.0f;
+
     //do one extra iteration to handle the movement indicator
     for (size_t i = scroll_start_index; i <= waves.size(); i++){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
+        row_start.x += group_space / 2;
         row_start.y += gap*(row+1) + wave_y;
+
+        if (i < waves.size()){
+            int next_y = (float(row)+1) * 8 * scale_factor + gap*(row+2) + wave_y;
+            olc::vf2d line_end = row_start; line_end.y = next_y;
+            if(i == 0 || waves[i].first != waves[i-1].first){
+                tv->FillRectDecal(row_start + olc::vf2d(-4.0f, 4.0f), olc::vf2d(8.0f, 8.0f));
+                tv->DrawLineDecal(row_start + olc::vf2d(0.0f, 8.0f), line_end);
+            } else {
+                tv->DrawLineDecal(row_start, line_end);
+            }
+        }
+
+        row_start.x += group_space / 2;
 
         if (row_start.y > size.y) break;
         
@@ -247,12 +267,12 @@ void WavePane::draw_waves() {
         }
 
         if (i >= waves.size()) break;
-        auto w = waves[i];
+        auto w = waves[i].second;
         if (display_mode == NAMES_AND_WAVES){
             if (i == selected_index){
                 tv->FillRectDecal(
                     row_start - olc::vf2d(1.0f, 0.0f),
-                    {wave_x, 8*scale_factor},
+                    {float(wave_x-group_space), float(8*scale_factor)},
                     olc::WHITE
                 );
             }
@@ -283,9 +303,9 @@ void WavePane::draw_zoom() {
     ) return;
 
     olc::vf2d first_top = {float(grabbed_position_first), 0};
-    olc::vf2d first_bottom = {float(grabbed_position_first), size.y};
+    olc::vf2d first_bottom = {float(grabbed_position_first), float(size.y)};
     olc::vf2d second_top = {float(grabbed_position_second), 0};
-    olc::vf2d second_bottom = {float(grabbed_position_second), size.y};
+    olc::vf2d second_bottom = {float(grabbed_position_second), float(size.y)};
 
     tv->DrawLineDecal(first_top, first_bottom);
     tv->DrawLineDecal(second_top, second_bottom);
@@ -306,7 +326,7 @@ void WavePane::draw() {
 
     /* Name/Wave separator */
     olc::Pixel divider_colour = divider_hover ? olc::YELLOW : olc::WHITE;    
-    tv->DrawLineDecal({wave_x, 0}, {wave_x, size.y}, divider_colour);
+    tv->DrawLineDecal({float(wave_x), 0.0f}, {float(wave_x), float(size.y)}, divider_colour);
     tv->DrawRectDecal({0,0}, size, border_colour); //override default frame drawing and do it at the end
 }
     
@@ -332,6 +352,9 @@ olc::Pixel WavePane::get_line_colour(BitVector*& value) {
         }
         return colour;
     }
+
+    //shouldn't get hit, but triggers warning
+    return olc::WHITE;
 }
 
 void WavePane::render_single_bit_line_segment(olc::Pixel colour, BitVector* last_value, olc::vi2d draw_start, olc::vi2d draw_stop, BitVector::Bit last, BitVector::Bit curr, olc::vi2d row_start) {
@@ -433,5 +456,5 @@ void WavePane::render_line_segment(BitVector* value, int time, BitVector*& last_
 }
 
 void WavePane::add_wave(Var* var) {
-    waves.push_back(var);
+    waves.push_back({"g0", var});
 }
