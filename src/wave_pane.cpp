@@ -135,6 +135,7 @@ void WavePane::update(float t) {
     if (mouse_select_state == FIRST_SELECTED_DIVIDER ||
         mouse_select_state == SECOND_SELECTED_DIVIDER) {
         wave_x = grabbed_position_second;
+        max_time = pixel_to_time(size.x - wave_x);
     }
 
     if (mouse_select_state == SECOND_SELECTED_DIVIDER) {
