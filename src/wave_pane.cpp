@@ -199,14 +199,17 @@ void WavePane::draw_timeline() {
     int timeline_resolution = std::pow(10, std::floor(std::log10(max_time - min_time)));
     if (((max_time - min_time) / timeline_resolution) < 5) timeline_resolution /= 10;
     int timeline_value = timeline_resolution * int(min_time / timeline_resolution);
+    tv->GetPGE()->SetPixelMode(olc::Pixel::ALPHA);
     while (timeline_value <= max_time) {
         if (timeline_value >= min_time){
             int pixel = time_to_pixel(timeline_value);
-            tv->DrawLineDecal({wave_x + pixel, 0}, {wave_x + pixel, 10});
+            tv->DrawLineDecal({wave_x + pixel, 0}, {wave_x + pixel, 10}, olc::WHITE);
+            tv->DrawLineDecal({wave_x + pixel, 10}, {wave_x + pixel, size.y - 10}, olc::Pixel(0xFF, 0xFF, 0xFF, 32));
             tv->DrawStringDecal({wave_x + pixel + 2, 2}, std::to_string(timeline_value));
         }
         timeline_value += timeline_resolution;
     }
+    tv->GetPGE()->SetPixelMode(olc::Pixel::NORMAL);
 }
 
 void WavePane::set_cursor(int time) {
@@ -295,8 +298,8 @@ void WavePane::draw_zoom() {
 }
 
 void WavePane::draw() {
-    draw_timeline();
     draw_waves();
+    draw_timeline();
     draw_zoom();
     draw_cursor();
 
