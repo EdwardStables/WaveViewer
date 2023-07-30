@@ -77,7 +77,7 @@ void WavePane::update(float t) {
         ;
     }
 
-    //state update
+    //state update (zoom/cursor/divider)
     if (point_in_bb(mpos)){
         if (mouse_select_state == NONE && mdown){
             if (mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range)
@@ -120,7 +120,7 @@ void WavePane::update(float t) {
         }
 
         //update cursor instead
-        if (grabbed_position_first == grabbed_position_second){
+        if (grabbed_position_first == grabbed_position_second && grabbed_position_first > wave_x){
             set_cursor(provisional_min_time);
         }
         else if (
