@@ -14,6 +14,25 @@ void WavePane::update(float t) {
         display_mode = NAMES_AND_WAVES;
     }
 
+    /* Cursor seeking */
+    bool prev = pge->GetKey(olc::N).bPressed;
+    bool next = pge->GetKey(olc::M).bPressed;
+    if (selected_index != -1 && (prev ^ next)){
+        Var* selected_var = waves[selected_index];
+        if (prev){
+            std::cout << selected_var->identifier << " prev " << cursor_time << " -> ";
+            cursor_time = selected_var->change_before_time(cursor_time);
+            std::cout << cursor_time << std::endl;
+        }
+
+        if (next){
+            std::cout << selected_var->identifier << " next " << cursor_time << " -> ";
+            cursor_time = selected_var->change_after_time(cursor_time);
+            std::cout << cursor_time << std::endl;
+        }
+    }
+
+
     /* Scrolling */
     if (pge->GetMouseWheel() != 0 && waves.size()){
         bool up = pge->GetMouseWheel() >= 0;
