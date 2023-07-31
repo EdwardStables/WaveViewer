@@ -11,6 +11,8 @@ class WavePane : public Pane {
     int selected_index = -1;
     int selected_index_move = -1;
 
+    std::string group_hover = "";
+
     enum {
         NAMES_AND_WAVES, VALUES_AND_WAVES
     } display_mode = NAMES_AND_WAVES;
@@ -20,6 +22,7 @@ class WavePane : public Pane {
     int min_time = min_time_limit;
     int max_time = max_time_limit;
 
+    float group_space = 12.0f;
     float scale_factor = 2.0f;
     int gap = 4;
     //initial offsets
@@ -40,6 +43,7 @@ class WavePane : public Pane {
         FIRST_SELECTED_ZOOM, SECOND_SELECTED_ZOOM,
         FIRST_SELECTED_DIVIDER, SECOND_SELECTED_DIVIDER,
         FIRST_SELECTED_SIGNAL, SECOND_SELECTED_SIGNAL,
+        FIRST_SELECTED_GROUP, SECOND_SELECTED_GROUP,
     } mouse_select_state = NONE;
     bool divider_hover = false;
     int zoom_cancel_width = 10;
@@ -76,6 +80,7 @@ private:
 
     //utilities
 private:
+    int y_pixel_to_signal(int pixel);
     int pixel_to_time(int pixel);
     int time_to_pixel(int pixel);
     olc::Pixel get_line_colour(BitVector*& value);

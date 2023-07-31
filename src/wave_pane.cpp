@@ -66,11 +66,28 @@ void WavePane::update(float t) {
                 mouse_select_state == SECOND_SELECTED_DIVIDER
             )
         ;
+        if (mpos.x < group_space &&
+                (
+                    mouse_select_state == NONE ||
+                    mouse_select_state == FIRST_SELECTED_GROUP ||
+                    mouse_select_state == SECOND_SELECTED_GROUP
+                )
+        ){
+            int index = y_pixel_to_signal(mpos.y);
+            if (index >= 0 && index < waves.size()){
+                group_hover = waves[index].first;
+            }
+        } else {
+            group_hover = "";
+        }
     }
 
     //state update (zoom/cursor/divider)
     if (point_in_bb(mpos)){
         if (mouse_select_state == NONE && mdown){
+            if (mpos.x < group_space) {
+                mouse_select_state = FIRST_SELECTED_GROUP;
+            } else
             if (mpos.x < wave_x - divider_range) {
                 mouse_select_state = FIRST_SELECTED_SIGNAL;
                 grabbed_position_first = mpos.y;
@@ -86,6 +103,7 @@ void WavePane::update(float t) {
 
         if (mup){
             switch(mouse_select_state){
+                case FIRST_SELECTED_GROUP:  mouse_select_state = SECOND_SELECTED_GROUP; break;
                 case FIRST_SELECTED_SIGNAL:  mouse_select_state = SECOND_SELECTED_SIGNAL; break;
                 case FIRST_SELECTED_ZOOM:    mouse_select_state = SECOND_SELECTED_ZOOM; break;
                 case FIRST_SELECTED_DIVIDER: mouse_select_state = SECOND_SELECTED_DIVIDER; break;
@@ -103,6 +121,11 @@ void WavePane::update(float t) {
     }
 
     //state resolution
+
+    if (mouse_select_state == SECOND_SELECTED_GROUP) {
+        mouse_select_state = NONE;
+    }
+
     if (mouse_select_state == SECOND_SELECTED_ZOOM){
         int provisional_min_time;
         int provisional_max_time;
@@ -144,14 +167,8 @@ void WavePane::update(float t) {
 
     if (mouse_select_state == FIRST_SELECTED_SIGNAL ||
         mouse_select_state == SECOND_SELECTED_SIGNAL) {
-        int mx1 = grabbed_position_first - wave_y;
-        int index = mx1 / (8*scale_factor + gap);
-        selected_index = index + scroll_start_index;
-
-
-        int mx2 = grabbed_position_second - wave_y;
-        int index2 = mx2 / (8*scale_factor + gap);
-        selected_index_move = std::clamp(index2 + scroll_start_index, 0, int(waves.size()-1));
+        selected_index = y_pixel_to_signal(grabbed_position_first);
+        selected_index_move = y_pixel_to_signal(grabbed_position_second);
     }
 
     if (mouse_select_state == SECOND_SELECTED_SIGNAL) {
@@ -172,11 +189,16 @@ void WavePane::update(float t) {
     }
 
     if (clamp_cursor_to_center){
-        std::cout << "clamping" << std::endl;
         int time_width = max_time - min_time;
         min_time = cursor_time - (time_width/2);
         max_time = cursor_time + (time_width/2);
     }
+}
+
+int WavePane::y_pixel_to_signal(int pixel) {
+    int mx = pixel - wave_y;
+    int index = mx / (8*scale_factor + gap);
+    return std::clamp(index + scroll_start_index, 0, int(waves.size()-1));
 }
 
 void WavePane::reset_zoom() {
@@ -236,22 +258,22 @@ void WavePane::draw_waves() {
         return;
     }
 
-    float group_space = 12.0f;
-
     //do one extra iteration to handle the movement indicator
     for (size_t i = scroll_start_index; i <= waves.size(); i++){
         olc::vf2d row_start = olc::vf2d{0.0f,float(row)} * 8 * scale_factor;
         row_start.x += group_space / 2;
         row_start.y += gap*(row+1) + wave_y;
 
+        /* Draw group markers */
         if (i < waves.size()){
             int next_y = (float(row)+1) * 8 * scale_factor + gap*(row+2) + wave_y;
             olc::vf2d line_end = row_start; line_end.y = next_y;
+            olc::Pixel colour = waves[i].first == group_hover ? olc::YELLOW : olc::WHITE;
             if(i == 0 || waves[i].first != waves[i-1].first){
-                tv->FillRectDecal(row_start + olc::vf2d(-4.0f, 4.0f), olc::vf2d(8.0f, 8.0f));
-                tv->DrawLineDecal(row_start + olc::vf2d(0.0f, 8.0f), line_end);
+                tv->FillRectDecal(row_start + olc::vf2d(-4.0f, 4.0f), olc::vf2d(8.0f, 8.0f), colour);
+                tv->DrawLineDecal(row_start + olc::vf2d(0.0f, 8.0f), line_end, colour);
             } else {
-                tv->DrawLineDecal(row_start, line_end);
+                tv->DrawLineDecal(row_start, line_end, colour);
             }
         }
 
@@ -290,6 +312,7 @@ void WavePane::draw_waves() {
         }
         row++;
 
+        row_start.x -= group_space;
         render_wave(w, row_start);
     }
 }
