@@ -17,8 +17,8 @@ class WavePane : public Pane {
         NAMES_AND_WAVES, VALUES_AND_WAVES
     } display_mode = NAMES_AND_WAVES;
 
-    int min_time_limit = 0;
-    int max_time_limit = 2300;
+    const int min_time_limit = 0;
+    const int max_time_limit;
     int min_time = min_time_limit;
     int max_time = max_time_limit;
 
@@ -52,8 +52,8 @@ class WavePane : public Pane {
     int grabbed_position_second;
 
 public:
-    WavePane(Manager* manager, olc::TransformedView* tv) : Pane(manager, tv) {};
-    WavePane(Manager* manager) : Pane(manager) {};
+    WavePane(Manager* manager, const int max_time, olc::TransformedView* tv) : Pane(manager, tv), max_time_limit(max_time) {};
+    WavePane(Manager* manager, const int max_time) : Pane(manager), max_time_limit(max_time) {};
     virtual void update(float t) override;
     virtual void draw() override;
     void add_wave(Var* var);

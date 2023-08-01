@@ -24,7 +24,7 @@ bool WaveViewer::OnUserCreate() {
     manager.wave_list = sigs;
 
     //wave pane
-    WavePane* waves = new WavePane(&manager);
+    WavePane* waves = new WavePane(&manager, store->get_max_time());
     olc::vf2d waves_size = GetScreenSize()-olc::vi2d(2,3);
     waves_size.x *= 0.8f;
     waves->set_size(waves_size);
