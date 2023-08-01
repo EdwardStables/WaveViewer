@@ -55,32 +55,31 @@ void WavePane::update(float t) {
     bool mdown = pge->GetMouse(0).bPressed;
     bool mup = pge->GetMouse(0).bReleased;
     auto mpos = get_mpos();
+    bool in_bb = point_in_bb(mpos);
     
     //hover update
-    if (point_in_bb(mpos)){
-        divider_hover =
-            mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range &&
-            (
-                mouse_select_state == NONE ||
-                mouse_select_state == FIRST_SELECTED_DIVIDER ||
-                mouse_select_state == SECOND_SELECTED_DIVIDER
-            )
-        ;
-        if (mpos.x < group_space &&
-                (
-                    mouse_select_state == NONE ||
-                    mouse_select_state == FIRST_SELECTED_GROUP ||
-                    mouse_select_state == SECOND_SELECTED_GROUP
-                )
-        ){
-            int index = y_pixel_to_signal(mpos.y);
-            if (index >= 0 && index < waves.size()){
-                group_hover = waves[index].first;
-            }
-        } else {
-            group_hover = "";
+    divider_hover = in_bb &&
+                    mpos.x > wave_x - divider_range && mpos.x < wave_x + divider_range &&
+                    (
+                        mouse_select_state == NONE ||
+                        mouse_select_state == FIRST_SELECTED_DIVIDER ||
+                        mouse_select_state == SECOND_SELECTED_DIVIDER
+                    );
+    if (mpos.x < group_space && in_bb  &&
+        (
+            mouse_select_state == NONE ||
+            mouse_select_state == FIRST_SELECTED_GROUP ||
+            mouse_select_state == SECOND_SELECTED_GROUP
+        )
+    ){
+        int index = y_pixel_to_signal(mpos.y);
+        if (index >= 0 && index < waves.size()){
+            group_hover = waves[index].first;
         }
+    } else {
+        group_hover = "";
     }
+    
 
     //state update (zoom/cursor/divider)
     if (point_in_bb(mpos)){
