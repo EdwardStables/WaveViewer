@@ -17,6 +17,7 @@ public:
     Heirarchy(Manager* manager, Store* store) : Pane(manager), store(store) {};
     virtual void update(float t) override;
     virtual void draw() override;
+    virtual void reload_waves(Store* store) override;
 
     void build_draw_list(int& row, int depth, Scope* current_scope);
 };
@@ -31,5 +32,6 @@ public:
     WaveList(Manager* manager) : Pane(manager) {};
     virtual void update(float t) override;
     virtual void draw() override;
+    virtual void reload_waves(Store* store) override;
     void set_scope(Scope*, bool add_waves=false);
 };

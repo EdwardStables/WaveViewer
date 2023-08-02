@@ -17,8 +17,8 @@ class WavePane : public Pane {
         NAMES_AND_WAVES, VALUES_AND_WAVES
     } display_mode = NAMES_AND_WAVES;
 
-    const int min_time_limit = 0;
-    const int max_time_limit;
+    int min_time_limit = 0;
+    int max_time_limit;
     int min_time = min_time_limit;
     int max_time = max_time_limit;
 
@@ -60,6 +60,7 @@ public:
     void reset_zoom();
     void set_cursor(int time);
     int get_cursor();
+    virtual void reload_waves(Store* store) override;
 
     //drawing
 private:

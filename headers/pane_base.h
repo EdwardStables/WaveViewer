@@ -4,6 +4,7 @@
 #include "olcPGEX_TransformedView.h"
 #include <cstdint>
 #include <vector>
+#include "store.h"
 
 class Manager;
 
@@ -19,6 +20,7 @@ public:
     Pane(Manager* manager) : manager(manager), tv(nullptr) {};
     virtual void update(float t);
     virtual void draw();
+    virtual void reload_waves(Store*) = 0;
     virtual void draw_frame() final;
     virtual bool point_in_bb(olc::vi2d) final;
     virtual void set_tv(olc::TransformedView* tv) final;

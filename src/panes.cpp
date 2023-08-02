@@ -64,13 +64,17 @@ void Heirarchy::build_draw_list(int& row, int depth, Scope* scope) {
     }
 }
 
+void Heirarchy::reload_waves(Store* store) {
+    this->store = store;
+    draw_list.clear();    
+}
+
 void WaveList::update(float t) {
     if (!scope) return;
 
     //TODO: don't need to clear this every frame
     int saved_selected = selected_row;
     draw_list.clear();    
-    int row = 0;
     
     for (auto [name, var] : scope->identifier_to_var){
         draw_list.push_back(std::make_tuple(var, false));
@@ -127,5 +131,15 @@ void WaveList::set_scope(Scope* scope, bool add_waves) {
 
     for (auto& [i, v] : this->scope->identifier_to_var){
         manager->wave_list_select_var(v);
+    }
+}
+
+void WaveList::reload_waves(Store* store) {
+    draw_list.clear();    
+
+
+    if (scope != nullptr){
+        std::string target_scope = scope->name;
+        set_scope(store->find_scope(target_scope));
     }
 }

@@ -1,4 +1,5 @@
 #include "wave_pane.h"
+#include "manager.h"
 
 void WavePane::update(float t) {
     wave_width = size.x - wave_x; 
@@ -6,6 +7,16 @@ void WavePane::update(float t) {
 
     /* Default reset key */
     if (pge->GetKey(olc::F).bPressed) reset_zoom();
+
+    /* Reload waves */
+    if (
+        pge->GetKey(olc::CTRL).bHeld &&
+        pge->GetKey(olc::SHIFT).bHeld &&
+        pge->GetKey(olc::R).bPressed
+    ) {
+        manager->reload_store();
+        std::cout << "reload" << std::endl;
+    }
 
     /* Draw state update */
     if (pge->GetKey(olc::V).bHeld) {
@@ -248,6 +259,26 @@ void WavePane::draw_cursor() {
     int pixel = time_to_pixel(cursor_time) + wave_x;
 
     tv->DrawLineDecal({float(pixel), 0.0f}, {float(pixel), float(size.y)});
+}
+
+void WavePane::reload_waves(Store* store) {
+    std::vector<std::pair<std::string,std::string>> id_codes;
+    for (auto& [group, var] : waves){
+        id_codes.push_back({group, var->identifier_code});
+    }
+
+    waves.clear();
+    max_time_limit = store->get_max_time();
+
+    for (auto& [group, id] : id_codes) {
+        if (store->identifier_code_to_var.count(id)){
+            add_wave(store->identifier_code_to_var.at(id));
+        }
+    }
+
+    if (selected_index != -1 && selected_index >= waves.size()){
+        selected_index = waves.size() - 1;
+    }
 }
 
 void WavePane::draw_waves() {

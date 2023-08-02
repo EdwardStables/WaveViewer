@@ -17,6 +17,7 @@ struct Manager {
 
     Manager(fs::path vcd_file) : vcd_file(vcd_file) {}
     void load_store();
+    void reload_store();
     void heirarchy_focus_scope(Scope* scope, bool add_waves=false);
     void wave_list_select_var(Var* var);
 };
