@@ -4,14 +4,17 @@
 #include "olcPGEX_TransformedView.h"
 #include "pane_base.h"
 #include "manager.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 class WaveViewer : public olc::PixelGameEngine {
     Store* store;
     PaneManager pane_manager;
     Manager manager;
 
 public:
-    WaveViewer(Store* store)
-        : store(store), pane_manager(PaneManager(*this))
+    WaveViewer(fs::path vcd_path)
+        : pane_manager(PaneManager(*this)), manager(vcd_path)
     {
         sAppName = "WaveViewer";
     }

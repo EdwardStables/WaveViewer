@@ -4,7 +4,8 @@
 #include "wave_pane.h"
 
 bool WaveViewer::OnUserCreate() {
-
+    manager.load_store();
+    store = manager.store;
     //heirarchy display
     Heirarchy* heir = new Heirarchy(&manager, store);
     olc::vf2d heir_size = GetScreenSize()-olc::vi2d(2,2);

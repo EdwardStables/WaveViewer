@@ -1,5 +1,10 @@
 #include "manager.h"
 
+void Manager::load_store() {
+    store = build_store(vcd_file);
+    store->extend_all_to_zero();    
+}
+
 void Manager::heirarchy_focus_scope(Scope* scope, bool add_waves) {
     wave_list->set_scope(scope, add_waves); 
 }

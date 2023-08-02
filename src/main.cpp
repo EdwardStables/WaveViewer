@@ -26,10 +26,7 @@ int main(int argc, char **argv) {
     }
 
 
-    Store* s = build_store(vcd_file);
-    s->extend_all_to_zero();    
-
-    WaveViewer* wave_viewer = new WaveViewer(s);
+    WaveViewer* wave_viewer = new WaveViewer(vcd_file);
 
     if (wave_viewer->Construct(1920, 1080, 1, 1))
         wave_viewer->Start();
